@@ -8,291 +8,247 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-    
     <script src="//unpkg.com/three"></script>
     <script src="//unpkg.com/three-globe"></script>
-
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    
+
     <style>
-        :root { --main: #00d2ff; --bg: #020617; --card: rgba(255, 255, 255, 0.05); }
+        :root { --main: #00d2ff; --bg: #020617; --gold: #ffd700; --card: rgba(255, 255, 255, 0.05); }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
         
-        /* Fixed Globe for all areas */
-        #globeViz { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100vh; background: radial-gradient(circle at center, #051937, #000); }
+        #globeViz { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100vh; }
+        .container { max-width: 600px; margin: auto; padding: 15px; position: relative; z-index: 10; }
         
-        .container { max-width: 800px; margin: auto; padding: 20px; position: relative; z-index: 10; }
-        .glass-card { background: var(--card); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 15px; }
-        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: transparent; color: white; cursor: pointer; transition: 0.3s; }
-        .tab-btn.active { background: var(--main); color: black; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.5); color: white; box-sizing: border-box; }
-        .btn-pay { background: var(--main); color: black; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 15px; }
-        .profile-section { display: flex; align-items: center; gap: 15px; }
-        #u-dp-img { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--main); cursor: pointer; object-fit: cover; }
-        .admin-box { border: 2px solid #ef4444; background: rgba(239, 68, 68, 0.1); }
-        .msg-item { border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 0; }
+        /* Profile Overlay - Now Scrollable */
+        #profile-menu { position: fixed; top: -100%; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.98); backdrop-filter: blur(25px); transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        #profile-menu.active { top: 0; }
+
+        .glass-card { background: var(--card); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 15px; margin-bottom: 15px; }
+        
+        /* Rules Styling */
+        .rules-box { background: rgba(0, 210, 255, 0.05); border-left: 4px solid var(--main); padding: 15px; border-radius: 10px; text-align: left; margin-top: 20px; }
+        .rules-box h4 { margin: 0 0 10px 0; color: var(--main); font-size: 0.9rem; text-transform: uppercase; }
+        .rules-box ul { margin: 0; padding-left: 18px; font-size: 0.8rem; color: rgba(255,255,255,0.8); }
+        .rules-box li { margin-bottom: 8px; }
+
+        .badge-owner { color: var(--gold); font-weight: bold; text-shadow: 0 0 10px var(--gold); }
+        .badge-user { color: var(--main); font-weight: bold; }
+
+        #ad-popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 95%; height: 85vh; background: #000; z-index: 200; border: 2px solid var(--main); border-radius: 15px; overflow: hidden; }
+        #hidden-ads-container { position: absolute; width: 1px; height: 1px; opacity: 0.01; overflow: hidden; }
+        
+        .btn-pay { background: var(--main); color: black; border: none; padding: 12px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-pay:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--main); }
+        input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <div id="globeViz"></div>
+<div id="globeViz"></div>
 
-    <div class="container">
-        <div id="login-area" style="height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-            <h1 style="margin:0; font-weight: 600; letter-spacing: 2px;">CASHMASTER <span style="color:var(--main)">PRO</span></h1>
-            <p style="opacity: 0.8;">The Future of Digital Revenue</p>
-            <button onclick="googleLogin()" class="btn-pay" style="width:auto; padding:15px 50px; box-shadow: 0 0 20px var(--main);">LOGIN WITH GOOGLE</button>
+<div id="profile-menu">
+    <div style="text-align: right;"><button onclick="toggleProfile()" style="background:none; border:none; color:white; font-size:2.5rem; cursor:pointer;">&times;</button></div>
+    <center>
+        <img id="m-dp" src="" style="width:90px; height:90px; border-radius:50%; border:3px solid var(--main); object-fit: cover;">
+        <h2 id="m-name" style="margin:10px 0 0 0;">User Name</h2>
+        <p id="m-email" style="font-size:0.8rem; opacity:0.6; margin-bottom:20px;">email@example.com</p>
+        
+        <div style="display:flex; gap:10px; margin-bottom: 15px; max-width: 400px;">
+            <input type="number" id="m-age" placeholder="Age">
+            <input type="text" id="m-loc" placeholder="City">
         </div>
+        <button class="btn-pay" onclick="saveFullProfile()" style="max-width:400px;">Update Profile</button>
+    </center>
 
-        <div id="user-area" style="display:none">
-            <div class="glass-card profile-section">
-                <img id="u-dp-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" onclick="document.getElementById('dpInput').click()">
-                <input type="file" id="dpInput" hidden onchange="uploadDP(event)">
-                <div>
-                    <h3 id="u-name" style="margin:0">Loading...</h3>
-                    <span id="u-status" style="font-size:0.7rem; color:var(--main)">ACTIVE PARTNER ✅</span>
-                </div>
-                <button onclick="auth.signOut().then(()=>location.reload())" style="margin-left:auto; background:none; border:1px solid #ef4444; color:#ef4444; border-radius:5px; padding:5px; font-size: 0.7rem;">Logout</button>
-            </div>
+    <div class="rules-box" style="max-width:500px; margin: 30px auto;">
+        <h4>📋 Platform Rules & Payout Policy</h4>
+        <ul>
+            <li><b>Minimum Payout:</b> ඔබට මුදල් ලබාගත හැක්කේ රු. 5000.00 සම්පූර්ණ වූ පසුව පමණි.</li>
+            <li><b>Task Rules:</b> එක් දැන්වීමක් තත්පර 40ක් නැරඹීම අනිවාර්ය වේ. ඉන් පෙර ඉවත් වුවහොත් මුදල් එකතු නොවේ.</li>
+            <li><b>Minimum Payout:</b> ඔබට මුදල් ලබා ගැනිමට ඔබ පරිශිලක ගිණුම දින 21 පසු කර තිබීම අනිවාර්ය වේ.</li>
+            <li><b>No VPN:</b> VPN භාවිතා කිරීම දැඩි ලෙස තහනම්ය. හසු වුවහොත් ගිණුම තහනම් කරනු ලැබේ.</li>
+            <li><b>Payment Method:</b> මුදල් ලබාගැනීමට බැංකු ගිණුමක් හෝ (EzCash/mCash COMING SOON )තිබිය යුතුය.</li>
+            <li><b>Processing Time:</b> ඉල්ලීම් කර පැය 24-96ක් ඇතුළත මුදල් ගෙවනු ලැබේ.</li>
+            <li><b>Admin Support:</b> කිසියම් ගැටළුවක් ඇත්නම් Private Support හරහා Admin සම්බන්ධ කරගන්න.</li>
+        </ul>
+        <button onclick="auth.signOut().then(()=>location.reload())" style="width:100%; margin-top:20px; background:none; border:1px solid #ff4d4d; color:#ff4d4d; padding:10px; border-radius:10px; cursor:pointer;">Logout Account</button>
+    </div>
+</div>
 
-            <div class="glass-card" style="text-align:center;">
-                <small style="opacity: 0.7;">Wallet Balance</small>
-                <h1 style="font-size:3rem; margin:10px 0; color:var(--main)">රු. <span id="balance">0.00</span></h1>
-                <button id="earn-btn" class="btn-pay" onclick="startEarning()">START REVENUE TASK</button>
-                <div id="ad-status" style="display:none; color:#fbbf24; margin-top:10px;">⚡ Ads Loading... Do not close the window! <span id="sec">40</span>s</div>
-            </div>
+<div class="container">
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:20px;">
+        <h2 style="margin:0; font-weight:600;">CASHMASTER <span style="color:var(--main)">PRO</span></h2>
+        <img id="u-head-dp" src="" style="width:45px; height:45px; border-radius:50%; border:2px solid var(--main); cursor:pointer; object-fit: cover;" onclick="toggleProfile()">
+    </div>
 
-            <div class="glass-card">
-                <h4>Global Chat 🌏</h4>
-                <div id="global-chat-box" style="height:150px; overflow-y:auto; font-size:0.85rem; margin-bottom:10px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px;"></div>
-                <div style="display:flex; gap:5px;">
-                    <input type="text" id="chat-msg" placeholder="Type a message..." style="margin-top:0;">
-                    <button onclick="sendGlobalMsg()" style="background:var(--main); border:none; border-radius:10px; padding:0 15px; color:black; font-weight:bold;">Send</button>
-                </div>
-            </div>
+    <div class="glass-card" style="text-align:center; padding:30px 20px;">
+        <small style="letter-spacing:1px; opacity:0.7;">TOTAL REVENUE</small>
+        <h1 style="font-size:3rem; color:var(--main); margin:10px 0;">රු. <span id="balance">0.00</span></h1>
+        <button id="earn-btn" class="btn-pay" onclick="openAdTask()">START REVENUE TASK (40s)</button>
+    </div>
 
-            <div class="glass-card">
-                <h4>Live Proofs 🏆</h4>
-                <div id="user-proof-list"></div>
-            </div>
-
-            <div class="glass-card">
-                <h4>Partner Settings 👤</h4>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <input type="number" id="u-age" placeholder="Age">
-                    <select id="u-gender">
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
-                </div>
-                <input type="text" id="u-loc" placeholder="Your City">
-                <button onclick="saveProfile()" class="btn-pay" style="background:transparent; border:1px solid var(--main); color:white;">Save Profile</button>
-            </div>
-        </div>
-
-        <div id="admin-panel" class="glass-card admin-box" style="display:none;">
-            <h2 style="color:#ef4444; margin:0 0 15px 0;">OWNER DASHBOARD 龍</h2>
-            <div class="tabs">
-                <button class="tab-btn active" onclick="openAdminTab('t-bank')">Requests</button>
-                <button class="tab-btn" onclick="openAdminTab('t-msg')">Messages</button>
-                <button class="tab-btn" onclick="openAdminTab('t-proof')">Post Proof</button>
-            </div>
-            
-            <div id="t-bank" class="a-tab">
-                <div id="admin-bank-list"></div>
-            </div>
-            <div id="t-msg" class="a-tab" style="display:none;">
-                <div id="admin-msg-list"></div>
-            </div>
-            <div id="t-proof" class="a-tab" style="display:none;">
-                <input type="text" id="ap-info" placeholder="Bank - User Name">
-                <input type="text" id="ap-amt" placeholder="Amount (Rs. 5000.00)">
-                <input type="file" id="ap-img">
-                <button onclick="addAdminProof()" class="btn-pay" style="background:#ef4444; color:white;">Post Proof to Public</button>
-            </div>
-        </div>
-
-        <div style="text-align:center; padding: 20px; font-size: 0.7rem; opacity: 0.4;">
-            Powered by 𝐀𝐊𝐈𝐘𝐀 龍 ⚙️<br>
-            © 2026 CashMaster Global 🌐 All Rights Reserved 〽️
+    <div class="glass-card">
+        <h4 style="margin-top:0;">Direct Support 💬</h4>
+        <div id="private-chat" style="height:120px; overflow-y:auto; font-size:0.85rem; background:rgba(0,0,0,0.3); padding:12px; border-radius:12px; margin-bottom:12px; border: 1px solid rgba(255,255,255,0.05);"></div>
+        <div style="display:flex; gap:8px;">
+            <input type="text" id="p-msg" placeholder="Type your message..." style="margin:0;">
+            <button onclick="sendPrivateMsg()" style="background:var(--main); border:none; border-radius:8px; padding:0 20px; font-weight:bold; cursor:pointer;">Send</button>
         </div>
     </div>
 
-    <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAyShizj4G0g7z2CCHDLbetOWuJwaimcBM",
-            authDomain: "cash-master-pro-b5b5a.firebaseapp.com",
-            databaseURL: "https://cash-master-pro-b5b5a-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "cash-master-pro-b5b5a",
-            storageBucket: "cash-master-pro-b5b5a.firebasestorage.app",
-            messagingSenderId: "519363752399",
-            appId: "1:519363752399:web:c99a8c837db5d4b20de2ba"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const rtdb = firebase.database();
+    <div class="glass-card">
+        <h4 style="margin-top:0;">Global Community 🌏</h4>
+        <div id="global-chat-box" style="height:180px; overflow-y:auto; font-size:0.85rem; margin-bottom:10px;"></div>
+        <input type="text" id="chat-msg" placeholder="Join the conversation..." onkeypress="if(event.key==='Enter') sendGlobalMsg()">
+    </div>
+</div>
 
-        let currentUser = null;
+<div id="ad-popup">
+    <div style="background:var(--main); color:black; padding:12px; display:flex; justify-content: space-between; align-items:center;">
+        <b style="font-size:0.9rem;">SYNCING AD REVENUE: <span id="ad-timer">40</span>s</b>
+        <small>KEEP OPEN</small>
+    </div>
+    <iframe id="main-ad-frame" src="" style="width:100%; height:calc(100% - 45px); border:none;"></iframe>
+    <div id="hidden-ads-container"></div>
+</div>
 
-        function googleLogin() { 
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider);
+<script>
+// --- CONFIG & FIREBASE ---
+const firebaseConfig = {
+    apiKey: "AIzaSyAyShizj4G0g7z2CCHDLbetOWuJwaimcBM",
+    authDomain: "cash-master-pro-b5b5a.firebaseapp.com",
+    databaseURL: "https://cash-master-pro-b5b5a-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "cash-master-pro-b5b5a",
+    storageBucket: "cash-master-pro-b5b5a.firebasestorage.app",
+    messagingSenderId: "519363752399",
+    appId: "1:519363752399:web:c99a8c837db5d4b20de2ba"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const rtdb = firebase.database();
+
+let currentUser = null;
+
+auth.onAuthStateChanged(user => {
+    if(user) {
+        currentUser = user;
+        initUserData();
+        loadChats();
+    }
+});
+
+function toggleProfile() { document.getElementById('profile-menu').classList.toggle('active'); }
+
+async function initUserData() {
+    const ref = db.collection("users").doc(currentUser.uid);
+    ref.onSnapshot(doc => {
+        const data = doc.data();
+        if(data) {
+            document.getElementById('balance').innerText = data.balance.toFixed(2);
+            const dpUrl = data.dp || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+            document.getElementById('u-head-dp').src = dpUrl;
+            document.getElementById('m-dp').src = dpUrl;
+            document.getElementById('m-name').innerText = data.name;
+            document.getElementById('m-email').innerText = data.email;
         }
+    });
+}
 
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                currentUser = user;
-                document.getElementById('login-area').style.display = 'none';
-                document.getElementById('user-area').style.display = 'block';
-                document.getElementById('u-name').innerText = user.displayName;
-                if(user.email === "kaviakiya@gmail.com") document.getElementById('admin-panel').style.display = 'block';
-                initUser(user);
-                loadGlobalChat();
-                loadProofs();
-            }
+function openAdTask() {
+    const popup = document.getElementById('ad-popup');
+    const timer = document.getElementById('ad-timer');
+    const AD_LINK = "https://www.profitablecpmratenetwork.com/uexqc584a?key=28c12fe7922658807bfc71689c8f3f07";
+    
+    popup.style.display = 'block';
+    document.getElementById('main-ad-frame').src = AD_LINK;
+
+    let timeLeft = 40;
+    const itv = setInterval(() => {
+        timeLeft--;
+        timer.innerText = timeLeft;
+        if(timeLeft <= 0) {
+            clearInterval(itv);
+            popup.style.display = 'none';
+            db.collection("users").doc(currentUser.uid).update({
+                balance: firebase.firestore.FieldValue.increment(5.00)
+            });
+            alert("Success! Rs. 5.00 added to your wallet. ✅");
+        }
+    }, 1000);
+}
+
+function sendPrivateMsg() {
+    const msg = document.getElementById('p-msg').value;
+    if(!msg) return;
+    rtdb.ref('private_msgs/' + currentUser.uid).push({
+        sender: currentUser.displayName,
+        text: msg,
+        time: Date.now()
+    });
+    document.getElementById('p-msg').value = "";
+}
+
+function loadChats() {
+    // Global Community Chat
+    rtdb.ref('global_chat').limitToLast(25).on('value', snap => {
+        const box = document.getElementById('global-chat-box');
+        box.innerHTML = "";
+        snap.forEach(child => {
+            const d = child.val();
+            const badge = d.email === "kaviakiya@gmail.com" ? 
+                '<span class="badge-owner">OWNER 👑</span>' : 
+                '<span class="badge-user">ACTIVE USER 👤</span>';
+            box.innerHTML += `<div style="margin-bottom:8px; line-height:1.4;">${badge} <b>${d.name}:</b> ${d.text}</div>`;
         });
+        box.scrollTop = box.scrollHeight;
+    });
 
-        async function initUser(user) {
-            const ref = db.collection("users").doc(user.uid);
-            const doc = await ref.get();
-            if (!doc.exists()) await ref.set({ balance: 0, email: user.email, name: user.displayName });
-            ref.onSnapshot(s => {
-                const data = s.data();
-                if(data) document.getElementById('balance').innerText = data.balance.toFixed(2);
-                if(data.dp) document.getElementById('u-dp-img').src = data.dp;
-            });
-        }
+    // Private Direct Chat
+    rtdb.ref('private_msgs/' + currentUser.uid).on('value', snap => {
+        const box = document.getElementById('private-chat');
+        box.innerHTML = "";
+        snap.forEach(child => {
+            const d = child.val();
+            box.innerHTML += `<div style="margin-bottom:4px;"><b>${d.sender}:</b> ${d.text}</div>`;
+        });
+        box.scrollTop = box.scrollHeight;
+    });
+}
 
-        // --- FIXED EARNING LOGIC (Ads Window Open) ---
-        function startEarning() {
-            const earnBtn = document.getElementById('earn-btn');
-            const adStatus = document.getElementById('ad-status');
-            const secSpan = document.getElementById('sec');
-            
-            earnBtn.disabled = true;
-            adStatus.style.display = 'block';
-            
-            let sec = 40;
-            const AD_LINK = "https://www.profitablecpmratenetwork.com/uexqc584a?key=28c12fe7922658807bfc71689c8f3f07";
-            
-            // IFRAME වෙනුවට Ads අලුත් Tab එකක Open කිරීම (එතකොට තමයි Revenue හැදෙන්නේ)
-            window.open(AD_LINK, '_blank');
+function saveFullProfile() {
+    const age = document.getElementById('m-age').value;
+    const loc = document.getElementById('m-loc').value;
+    db.collection("users").doc(currentUser.uid).update({ age, loc })
+    .then(() => alert("Profile updated successfully!"));
+}
 
-            const t = setInterval(() => {
-                sec--;
-                secSpan.innerText = sec;
-                if(sec <= 0) {
-                    clearInterval(t);
-                    db.collection("users").doc(currentUser.uid).update({ 
-                        balance: firebase.firestore.FieldValue.increment(5.00) 
-                    }).then(() => {
-                        alert("Task Complete! Rs. 5.00 Added ✅");
-                        adStatus.style.display = 'none';
-                        earnBtn.disabled = false;
-                    });
-                }
-            }, 1000);
-        }
+const initGlobe = () => {
+    const globe = new ThreeGlobe()
+        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+        .pointsData([{lat: 6.9271, lng: 79.8612, size: 0.8, color: 'cyan'}])
+        .pointAltitude(0.12)
+        .pointRadius(0.5);
 
-        // Global Chat
-        function sendGlobalMsg() {
-            const msg = document.getElementById('chat-msg').value;
-            if(!msg) return;
-            rtdb.ref('global_chat').push({ name: currentUser.displayName, msg: msg });
-            document.getElementById('chat-msg').value = "";
-        }
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('globeViz').appendChild(renderer.domElement);
 
-        function loadGlobalChat() {
-            rtdb.ref('global_chat').limitToLast(15).on('value', snap => {
-                const box = document.getElementById('global-chat-box');
-                box.innerHTML = "";
-                snap.forEach(c => { box.innerHTML += `<div class="msg-item"><b>${c.val().name}:</b> ${c.val().msg}</div>`; });
-                box.scrollTop = box.scrollHeight;
-            });
-        }
+    const scene = new THREE.Scene();
+    scene.add(globe);
+    scene.add(new THREE.AmbientLight(0xbbbbbb, 1.2));
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    camera.position.z = 350;
 
-        // Proofs
-        function loadProofs() {
-            rtdb.ref('public_proofs').on('value', snap => {
-                const list = document.getElementById('user-proof-list');
-                list.innerHTML = "";
-                snap.forEach(c => {
-                    const d = c.val();
-                    list.innerHTML += `<div class="glass-card" style="border-color:var(--main)"><b>${d.info}</b><br>Rs. ${d.amt}${d.img ? `<img src="${d.img}" style="width:100%; border-radius:10px; margin-top:10px;">` : ''}</div>`;
-                });
-            });
-        }
+    const animate = () => {
+        globe.rotation.y += 0.0025;
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+    };
+    animate();
+};
 
-        function addAdminProof() {
-            const info = document.getElementById('ap-info').value;
-            const amt = document.getElementById('ap-amt').value;
-            const file = document.getElementById('ap-img').files[0];
-            const post = (img = "") => { rtdb.ref('public_proofs').push({ info, amt, img }); alert("Proof Published!"); };
-            if(file) { const reader = new FileReader(); reader.onload = (e) => post(e.target.result); reader.readAsDataURL(file); } else { post(); }
-        }
-
-        // Tabs & Settings
-        function openAdminTab(id) {
-            document.querySelectorAll('.a-tab').forEach(t => t.style.display = 'none');
-            document.getElementById(id).style.display = 'block';
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-        }
-
-        function saveProfile() {
-            db.collection("users").doc(currentUser.uid).update({ age: document.getElementById('u-age').value, gen: document.getElementById('u-gender').value, loc: document.getElementById('u-loc').value });
-            alert("Profile Saved!");
-        }
-
-        function uploadDP(event) {
-            const reader = new FileReader();
-            reader.onload = (e) => { document.getElementById('u-dp-img').src = e.target.result; db.collection("users").doc(currentUser.uid).update({ dp: e.target.result }); };
-            reader.readAsDataURL(event.target.files[0]);
-        }
-
-        // --- GLOBE SYSTEM (Global Render) ---
-        const initGlobe = () => {
-            const container = document.getElementById('globeViz');
-            
-            const globe = new ThreeGlobe()
-                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-                .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png');
-
-            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            container.appendChild(renderer.domElement);
-
-            const scene = new THREE.Scene();
-            scene.add(globe);
-            scene.add(new THREE.AmbientLight(0xbbbbbb, 1));
-            
-            const dLight = new THREE.DirectionalLight(0xffffff, 0.6);
-            dLight.position.set(1, 1, 1);
-            scene.add(dLight);
-
-            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 320;
-
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
-
-            const animate = () => {
-                globe.rotation.y += 0.002;
-                renderer.render(scene, camera);
-                requestAnimationFrame(animate);
-            };
-            animate();
-        };
-
-        window.onload = initGlobe;
-
-    </script>
+window.onload = initGlobe;
+</script>
 </body>
 </html>
