@@ -29,7 +29,7 @@
 
     <div id="login-area" class="login-screen">
         <h1>CASHMASTER <span style="color: var(--main);">PRO</span></h1>
-        <p>ලංකාවේ අංක 1 ඇඩ් බලලා සල්ලි හොයන සයිට් එක</p>
+        <p>Sri Lanka's No.#1 site for making money by viewing ADS.</p>
         <button class="btn-google" onclick="googleLogin()">
             <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20"> Google සමඟ ලොග් වන්න
         </button>
@@ -43,7 +43,7 @@
             <small id="join-date">සාමාජිකත්වය ලබාගෙන දින: 0</small>
         </div>
 
-        <button id="main-earn-btn" class="earn-btn" onclick="startEarning()">START EARNING (Rs. 25.00)</button>
+        <button id="main-earn-btn" class="earn-btn" onclick="startEarning()">START EARNING (Rs. 05.00)</button>
         <p id="timer-text" style="display:none; color: #fbbf24;">මීළඟ ඇඩ් එකට සූදානම් වේ... (<span id="sec">40</span>s)</p>
 
         <div class="chat-box">
@@ -77,7 +77,7 @@
         };
         
         // මචං මේකට උඹේ Adsterra Direct Link එක දාපන්
-        const MY_AD_LINK = "https://www.highrevenuegate.com/uj7v9z8q?key=f0745558d94a11f26487928e21a36442"; 
+        const MY_AD_LINK = "https://www.profitablecpmratenetwork.com/uexqc584a?key=28c12fe7922658807bfc71689c8f3f07";
 
         // --- INITIALIZE ---
         firebase.initializeApp(firebaseConfig);
@@ -169,8 +169,8 @@
 
         async function addMoney() {
             const userRef = db.collection("users").doc(currentUser.uid);
-            await userRef.update({ balance: firebase.firestore.FieldValue.increment(25.00) });
-            alert("සුභ පැතුම්! රු. 25.00 ක් ඔබගේ ගිණුමට එකතු විය.");
+            await userRef.update({ balance: firebase.firestore.FieldValue.increment(05.00) });
+            alert("සුභ පැතුම්! රු. 05.00 ක් ඔබගේ ගිණුමට එකතු විය.");
             location.reload();
         }
 
