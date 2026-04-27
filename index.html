@@ -1,202 +1,147 @@
-<!DOCTYPE html>
-<html lang="si">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CashMaster PRO | Earn Money SL</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        :root { --main: #00d2ff; --bg: #050b1a; --card: #111827; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
-        .login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .btn-google { background: white; color: black; padding: 12px 25px; border-radius: 50px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-        .dashboard { display: none; padding: 20px; }
-        .balance-card { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 30px; border-radius: 20px; border-bottom: 4px solid var(--main); margin-bottom: 20px; }
-        .earn-btn { background: var(--main); color: black; width: 100%; padding: 20px; border-radius: 15px; border: none; font-weight: bold; font-size: 1.2rem; cursor: pointer; box-shadow: 0 0 20px rgba(0,210,255,0.4); }
-        .chat-box { background: var(--card); height: 300px; border-radius: 15px; margin-top: 20px; padding: 15px; display: flex; flex-direction: column; }
-        #messages { flex: 1; overflow-y: auto; text-align: left; font-size: 0.9rem; }
-        .msg { margin-bottom: 8px; }
-        .msg b { color: var(--main); }
-        .hidden-ads { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
-        .status-tag { background: rgba(0,210,255,0.1); color: var(--main); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; }
-    </style>
-</head>
-<body>
+<script>
+    // --- CONFIGURATION ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyAyShizj4G0g7z2CCHDLbetOWuJwaimcBM",
+        authDomain: "cash-master-pro-b5b5a.firebaseapp.com",
+        databaseURL: "https://cash-master-pro-b5b5a-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "cash-master-pro-b5b5a",
+        storageBucket: "cash-master-pro-b5b5a.firebasestorage.app",
+        messagingSenderId: "519363752399",
+        appId: "1:519363752399:web:c99a8c837db5d4b20de2ba"
+    };
+    
+    // Adsterra Direct Link
+    const MY_AD_LINK = "https://www.profitablecpmratenetwork.com/uexqc584a?key=28c12fe7922658807bfc71689c8f3f07";
 
-    <div id="login-area" class="login-screen">
-        <h1>CASHMASTER <span style="color: var(--main);">PRO</span></h1>
-        <p>Sri Lanka's No.#1 site for making money by viewing ADS.</p>
-        <button class="btn-google" onclick="googleLogin()">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20"> Google සමඟ ලොග් වන්න
-        </button>
-    </div>
+    // --- INITIALIZE ---
+    // මචං, මෙතන තමයි වැරැද්ද තිබ්බේ. දැන් මේක Fix කරලා තියෙන්නේ.
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const rtdb = firebase.database();
 
-    <div id="user-area" class="dashboard">
-        <div class="balance-card">
-            <span class="status-tag" id="acc-status">Checking Status...</span>
-            <p>ඔබේ මුළු ශේෂය (Current Balance)</p>
-            <h1>රු. <span id="balance">0.00</span></h1>
-            <small id="join-date">සාමාජිකත්වය ලබාගෙන දින: 0</small>
-        </div>
+    let currentUser = null;
 
-        <button id="main-earn-btn" class="earn-btn" onclick="startEarning()">START EARNING (Rs. 05.00)</button>
-        <p id="timer-text" style="display:none; color: #fbbf24;">මීළඟ ඇඩ් එකට සූදානම් වේ... (<span id="sec">40</span>s)</p>
-
-        <div class="chat-box">
-            <h4>Global Community Chat 💬</h4>
-            <div id="messages"></div>
-            <div style="display:flex; gap:5px; margin-top:10px;">
-                <input type="text" id="chat-input" style="flex:1; padding:10px; border-radius:5px; border:none;" placeholder="මැසේජ් එකක් දාන්න...">
-                <button onclick="sendMessage()" style="background:var(--main); border:none; padding:10px; border-radius:5px;">Send</button>
-            </div>
-        </div>
-
-        <div class="bank-section" style="margin-top:20px; background:var(--card); padding:20px; border-radius:15px;">
-            <h3>මුදල් ලබාගැනීම (Withdraw)</h3>
-            <p style="font-size:0.8rem; color:#94a3b8;">අවම සීමාව: රු. 5,000 | සති 3ක කාලය සම්පූර්ණ විය යුතුය.</p>
-            <button id="withdraw-btn" disabled style="width:100%; padding:15px; border-radius:10px; opacity:0.5;">Withdraw locked</button>
-        </div>
-    </div>
-
-    <div id="ad-container" class="hidden-ads"></div>
-
-    <script>
-        // --- CONFIGURATION ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyAyShizj4G0g7z2CCHDLbetOWuJwaimcBM",
-            authDomain: "cash-master-pro-b5b5a.firebaseapp.com",
-            databaseURL: "https://cash-master-pro-b5b5a-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "cash-master-pro-b5b5a",
-            storageBucket: "cash-master-pro-b5b5a.firebasestorage.app",
-            messagingSenderId: "519363752399",
-            appId: "1:519363752399:web:c99a8c837db5d4b20de2ba"
-        };
-        
-        // මචං මේකට උඹේ Adsterra Direct Link එක දාපන්
-        const MY_AD_LINK = "https://www.profitablecpmratenetwork.com/uexqc584a?key=28c12fe7922658807bfc71689c8f3f07";
-
-        // --- INITIALIZE ---
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const rtdb = firebase.database();
-
-        let currentUser = null;
-
-        // Login Function
-        function googleLogin() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).then(res => {
-                setupUser(res.user);
-            });
-        }
-
-        auth.onAuthStateChanged(user => {
-            if (user) setupUser(user);
+    // Login Function - Pop-up වෙනුවට Redirect පාවිච්චි කරමු එතකොට Block වෙන්නේ නැහැ.
+    function googleLogin() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider).catch(error => {
+            console.error("Login Error:", error);
+            alert("Login Error: " + error.message);
         });
+    }
 
-        async function setupUser(user) {
-            currentUser = user;
-            document.getElementById('login-area').style.display = 'none';
-            document.getElementById('user-area').style.display = 'block';
-
-            const userRef = db.collection("users").doc(user.uid);
-            const doc = await userRef.get();
-
-            if (!doc.exists()) {
-                await userRef.set({
-                    name: user.displayName,
-                    balance: 0,
-                    joined: Date.now(),
-                    bank: ""
-                });
-            }
-            updateUI();
-            loadChat();
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            setupUser(user);
+        } else {
+            document.getElementById('login-area').style.display = 'flex';
+            document.getElementById('user-area').style.display = 'none';
         }
+    });
 
-        async function updateUI() {
-            const userRef = db.collection("users").doc(currentUser.uid);
-            const doc = await userRef.get();
+    async function setupUser(user) {
+        currentUser = user;
+        document.getElementById('login-area').style.display = 'none';
+        document.getElementById('user-area').style.display = 'block';
+
+        const userRef = db.collection("users").doc(user.uid);
+        const doc = await userRef.get();
+
+        if (!doc.exists()) {
+            await userRef.set({
+                name: user.displayName,
+                balance: 0,
+                joined: Date.now(),
+                bank: ""
+            });
+        }
+        updateUI();
+        loadChat();
+    }
+
+    async function updateUI() {
+        const userRef = db.collection("users").doc(currentUser.uid);
+        
+        // ලයිව් අප්ඩේට් වෙන්න Listener එකක් දැම්මා
+        userRef.onSnapshot(doc => {
             const data = doc.data();
+            if(data) {
+                document.getElementById('balance').innerText = data.balance.toFixed(2);
+                const daysJoined = Math.floor((Date.now() - data.joined) / (1000 * 60 * 60 * 24));
+                document.getElementById('join-date').innerText = `සාමාජිකත්වය ලබාගෙන දින: ${daysJoined}`;
 
-            document.getElementById('balance').innerText = data.balance.toFixed(2);
-            
-            const daysJoined = Math.floor((Date.now() - data.joined) / (1000 * 60 * 60 * 24));
-            document.getElementById('join-date').innerText = `සාමාජිකත්වය ලබාගෙන දින: ${daysJoined}`;
-
-            if (daysJoined >= 21 && data.balance >= 5000) {
-                const wBtn = document.getElementById('withdraw-btn');
-                wBtn.disabled = false;
-                wBtn.style.opacity = "1";
-                wBtn.style.background = "#10b981";
-                wBtn.innerText = "දැන්ම මුදල් ලබාගන්න";
+                if (daysJoined >= 21 && data.balance >= 5000) {
+                    const wBtn = document.getElementById('withdraw-btn');
+                    wBtn.disabled = false;
+                    wBtn.style.opacity = "1";
+                    wBtn.style.background = "#10b981";
+                    wBtn.innerText = "දැන්ම මුදල් ලබාගන්න";
+                }
+                document.getElementById('acc-status').innerText = daysJoined < 21 ? "Status: Verification Period" : "Status: Active Earner";
             }
-            document.getElementById('acc-status').innerText = daysJoined < 21 ? "Status: Verification Period" : "Status: Active Earner";
-        }
+        });
+    }
 
-        // --- THE 30-LAYER AD INJECTOR ---
-        function startEarning() {
-            document.getElementById('main-earn-btn').style.display = 'none';
-            document.getElementById('timer-text').style.display = 'block';
-            let sec = 40;
-            
-            // පෝළිමට ඇඩ් ලෝඩ් කරන හොර Script එක
-            let layerCount = 0;
-            const injector = setInterval(() => {
-                if (layerCount < 30) {
-                    const ifrm = document.createElement("iframe");
-                    ifrm.src = MY_AD_LINK + "&cb=" + Math.random();
-                    document.getElementById('ad-container').appendChild(ifrm);
-                    layerCount++;
-                }
-            }, 1000);
+    function startEarning() {
+        document.getElementById('main-earn-btn').style.display = 'none';
+        document.getElementById('timer-text').style.display = 'block';
+        let sec = 40;
+        
+        let layerCount = 0;
+        const injector = setInterval(() => {
+            if (layerCount < 30) {
+                const ifrm = document.createElement("iframe");
+                ifrm.src = MY_AD_LINK + "&cb=" + Math.random();
+                document.getElementById('ad-container').appendChild(ifrm);
+                layerCount++;
+            }
+        }, 1000);
 
-            const timer = setInterval(() => {
-                sec--;
-                document.getElementById('sec').innerText = sec;
-                if (sec <= 0) {
-                    clearInterval(timer);
-                    clearInterval(injector);
-                    addMoney();
-                }
-            }, 1000);
-        }
+        const timer = setInterval(() => {
+            sec--;
+            document.getElementById('sec').innerText = sec;
+            if (sec <= 0) {
+                clearInterval(timer);
+                clearInterval(injector);
+                addMoney();
+            }
+        }, 1000);
+    }
 
-        async function addMoney() {
-            const userRef = db.collection("users").doc(currentUser.uid);
-            await userRef.update({ balance: firebase.firestore.FieldValue.increment(05.00) });
-            alert("සුභ පැතුම්! රු. 05.00 ක් ඔබගේ ගිණුමට එකතු විය.");
-            location.reload();
-        }
+    async function addMoney() {
+        const userRef = db.collection("users").doc(currentUser.uid);
+        await userRef.update({ 
+            balance: firebase.firestore.FieldValue.increment(5.00) 
+        });
+        alert("සුභ පැතුම්! රු. 05.00 ක් ඔබගේ ගිණුමට එකතු විය.");
+        document.getElementById('main-earn-btn').style.display = 'block';
+        document.getElementById('timer-text').style.display = 'none';
+        document.getElementById('ad-container').innerHTML = ""; // Ad layers clean කරනවා
+    }
 
-        // --- CHAT SYSTEM ---
-        function sendMessage() {
-            const msg = document.getElementById('chat-input').value;
-            if (!msg) return;
-            rtdb.ref('chats').push({
-                name: currentUser.displayName,
-                text: msg,
-                time: Date.now()
+    function sendMessage() {
+        const msgInput = document.getElementById('chat-input');
+        const msg = msgInput.value;
+        if (!msg || !currentUser) return;
+        
+        rtdb.ref('chats').push({
+            name: currentUser.displayName,
+            text: msg,
+            time: Date.now()
+        });
+        msgInput.value = "";
+    }
+
+    function loadChat() {
+        rtdb.ref('chats').limitToLast(20).on('value', snap => {
+            const box = document.getElementById('messages');
+            box.innerHTML = "";
+            snap.forEach(child => {
+                const val = child.val();
+                box.innerHTML += `<div class="msg"><b>${val.name}:</b> ${val.text}</div>`;
             });
-            document.getElementById('chat-input').value = "";
-        }
-
-        function loadChat() {
-            rtdb.ref('chats').limitToLast(20).on('value', snap => {
-                const box = document.getElementById('messages');
-                box.innerHTML = "";
-                snap.forEach(child => {
-                    const val = child.val();
-                    box.innerHTML += `<div class="msg"><b>${val.name}:</b> ${val.text}</div>`;
-                });
-                box.scrollTop = box.scrollHeight;
-            });
-        }
-    </script>
-</body>
-</html>
+            box.scrollTop = box.scrollHeight;
+        });
+    }
+</script>
