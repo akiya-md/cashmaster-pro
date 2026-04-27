@@ -3,71 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CashMaster PRO | Earn Money SL</title>
+    <title>CashMaster PRO | Sri Lanka's #1 Ads Earner</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --main: #00d2ff; --bg: #050b1a; --card: #111827; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
+        :root { --main: #00d2ff; --bg: #020617; --card: rgba(255, 255, 255, 0.05); --glass: blur(10px); }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 50px; }
+        
+        /* Glassmorphism Effect */
+        .glass-card { background: var(--card); backdrop-filter: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; margin-bottom: 20px; }
+
         .login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .btn-google { background: white; color: black; padding: 12px 25px; border-radius: 50px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-        .dashboard { display: none; padding: 20px; }
-        .balance-card { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 30px; border-radius: 20px; border-bottom: 4px solid var(--main); margin-bottom: 20px; }
-        .earn-btn { background: var(--main); color: black; width: 100%; padding: 20px; border-radius: 15px; border: none; font-weight: bold; font-size: 1.2rem; cursor: pointer; box-shadow: 0 0 20px rgba(0,210,255,0.4); }
-        .chat-box { background: var(--card); height: 300px; border-radius: 15px; margin-top: 20px; padding: 15px; display: flex; flex-direction: column; }
-        #messages { flex: 1; overflow-y: auto; text-align: left; font-size: 0.9rem; }
-        .msg { margin-bottom: 8px; }
+        .btn-google { background: white; color: black; padding: 14px 28px; border-radius: 50px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+        .btn-google:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+
+        .dashboard { display: none; padding: 20px; max-width: 500px; margin: auto; }
+        .balance-title { font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px; }
+        .balance-amount { font-size: 2.5rem; font-weight: 600; margin: 0; color: var(--main); }
+
+        .earn-btn { background: var(--main); color: #020617; width: 100%; padding: 18px; border-radius: 15px; border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.3s; }
+        .earn-btn:active { transform: scale(0.95); }
+
+        /* Ad Loading Status */
+        .ad-status { display: none; background: rgba(251, 191, 36, 0.1); color: #fbbf24; padding: 10px; border-radius: 10px; font-size: 0.8rem; margin-top: 15px; border: 1px dashed #fbbf24; }
+
+        .chat-box { height: 250px; display: flex; flex-direction: column; }
+        #messages { flex: 1; overflow-y: auto; margin-bottom: 10px; padding-right: 5px; }
+        .msg { font-size: 0.85rem; margin-bottom: 6px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 8px; }
         .msg b { color: var(--main); }
-        .hidden-ads { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
-        .status-tag { background: rgba(0,210,255,0.1); color: var(--main); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; }
+
+        /* Payment Proofs */
+        .proof-title { font-size: 1rem; font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .proof-item { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .proof-item span { color: #10b981; font-weight: bold; }
+
+        #admin-panel { display: none; border-top: 2px solid #ef4444; margin-top: 30px; }
+        .hidden-ads { position: fixed; bottom: 0; right: 0; opacity: 0.01; pointer-events: none; }
     </style>
 </head>
 <body>
 
     <div id="login-area" class="login-screen">
-        <h1>CASHMASTER <span style="color: var(--main);">PRO</span></h1>
-        <p>Sri Lanka's No.#1 site for making money by viewing ADS.</p>
+        <h1 style="letter-spacing: -1px;">CASHMASTER <span style="color: var(--main);">PRO</span></h1>
+        <p style="color: #94a3b8; font-size: 0.9rem;">Sri Lanka's No.#1 Ads Revenue Platform</p>
         <button class="btn-google" onclick="googleLogin()">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20"> Google සමඟ ලොග් වන්න
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20"> Sign in with Google
         </button>
     </div>
 
     <div id="user-area" class="dashboard">
-        <div class="balance-card">
-            <span class="status-tag" id="acc-status">Checking Status...</span>
-            <p>ඔබේ මුළු ශේෂය (Current Balance)</p>
-            <h1>රු. <span id="balance">0.00</span></h1>
-            <small id="join-date">සාමාජිකත්වය ලබාගෙන දින: 0</small>
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span id="acc-status" style="font-size: 0.7rem; color: var(--main);">Status: Active</span>
+                <span id="join-date" style="font-size: 0.7rem; color: #64748b;">Member since: 0 days</span>
+            </div>
+            <p class="balance-title">Available Balance</p>
+            <h1 class="balance-amount">රු. <span id="balance">0.00</span></h1>
         </div>
 
-        <button id="main-earn-btn" class="earn-btn" onclick="startEarning()">START EARNING (Rs. 05.00)</button>
-        <div id="timer-text" style="display:none; color: #fbbf24; text-align: center; margin-top: 10px;">
-            මීළඟ ඇඩ් එකට සූදානම් වේ... (<span id="sec">40</span>s)
+        <button id="main-earn-btn" class="earn-btn" onclick="startEarning()">START EARNING (Rs. 5.00)</button>
+        
+        <div id="timer-status" class="ad-status">
+            ⚡ Ads Loading... Please stay on page (<span id="sec">40</span>s)
         </div>
 
-        <div class="chat-box">
-            <h4>Global Community Chat 💬</h4>
-            <div id="messages"></div>
-            <div style="display:flex; gap:5px; margin-top:10px;">
-                <input type="text" id="chat-input" style="flex:1; padding:10px; border-radius:5px; border:none;" placeholder="මැසේජ් එකක් දාන්න...">
-                <button onclick="sendMessage()" style="background:var(--main); border:none; padding:10px; border-radius:5px; color: black; font-weight: bold;">Send</button>
+        <div class="glass-card" style="margin-top: 20px;">
+            <div class="chat-box">
+                <div class="proof-title">Community Chat 💬</div>
+                <div id="messages"></div>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="chat-input" style="flex:1; padding:12px; border-radius:10px; border:none; background: rgba(255,255,255,0.05); color: white;" placeholder="Say something...">
+                    <button onclick="sendMessage()" style="background:var(--main); border:none; padding:10px 15px; border-radius:10px; cursor:pointer;">🚀</button>
+                </div>
             </div>
         </div>
 
-        <div class="bank-section" style="margin-top:20px; background:var(--card); padding:20px; border-radius:15px;">
-            <h3>මුදල් ලබාගැනීම (Withdraw)</h3>
-            <p style="font-size:0.8rem; color:#94a3b8;">අවම සීමාව: රු. 5,000 | සති 3ක කාලය සම්පූර්ණ විය යුතුය.</p>
-            <button id="withdraw-btn" disabled style="width:100%; padding:15px; border-radius:10px; opacity:0.5; border: none; font-weight: bold;">Withdraw locked</button>
+        <div class="glass-card">
+            <div class="proof-title">Verified Payouts ✅</div>
+            <div id="proof-container">
+                <div class="proof-item">HNB Bank - Saman K. <span>Rs. 5,250.00</span></div>
+                <div class="proof-item">Commercial - Nimali <span>Rs. 7,100.00</span></div>
+            </div>
+        </div>
+
+        <div id="admin-panel" class="glass-card">
+            <h3 style="color: #ef4444;">Admin Dashboard</h3>
+            <button onclick="addPaymentProof()" style="background: #ef4444; color: white; width: 100%; padding: 10px; border-radius: 10px; border: none;">Add Payment Proof</button>
         </div>
     </div>
 
     <div id="ad-container" class="hidden-ads"></div>
 
     <script>
-        // --- CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyAyShizj4G0g7z2CCHDLbetOWuJwaimcBM",
             authDomain: "cash-master-pro-b5b5a.firebaseapp.com",
@@ -80,7 +110,6 @@
         
         const MY_AD_LINK = "https://www.profitablecpmratenetwork.com/uexqc584a?key=28c12fe7922658807bfc71689c8f3f07";
 
-        // --- INITIALIZE ---
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
@@ -88,83 +117,67 @@
 
         let currentUser = null;
 
-        // Login Function
         function googleLogin() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch(error => {
-                alert("Login Error: " + error.message);
-            });
+            auth.signInWithPopup(provider);
         }
 
         auth.onAuthStateChanged(user => {
             if (user) {
+                currentUser = user;
+                document.getElementById('login-area').style.display = 'none';
+                document.getElementById('user-area').style.display = 'block';
+                
+                // ඇඩ්මින් ද බලමු (kaviakiya@gmail.com)
+                if(user.email === "kaviakiya@gmail.com") {
+                    document.getElementById('admin-panel').style.display = 'block';
+                }
+
                 setupUser(user);
-            } else {
-                document.getElementById('login-area').style.display = 'flex';
-                document.getElementById('user-area').style.display = 'none';
             }
         });
 
         async function setupUser(user) {
-            currentUser = user;
-            document.getElementById('login-area').style.display = 'none';
-            document.getElementById('user-area').style.display = 'block';
-
             const userRef = db.collection("users").doc(user.uid);
             const doc = await userRef.get();
-
             if (!doc.exists()) {
-                await userRef.set({
-                    name: user.displayName,
-                    balance: 0,
-                    joined: Date.now(),
-                    bank: ""
-                });
+                await userRef.set({ name: user.displayName, balance: 0, joined: Date.now() });
             }
-            updateUI();
+            loadData();
             loadChat();
         }
 
-        function updateUI() {
-            const userRef = db.collection("users").doc(currentUser.uid);
-            userRef.onSnapshot(doc => {
+        function loadData() {
+            db.collection("users").doc(currentUser.uid).onSnapshot(doc => {
                 const data = doc.data();
-                if (data) {
+                if(data) {
                     document.getElementById('balance').innerText = data.balance.toFixed(2);
-                    const daysJoined = Math.floor((Date.now() - data.joined) / (1000 * 60 * 60 * 24));
-                    document.getElementById('join-date').innerText = `සාමාජිකත්වය ලබාගෙන දින: ${daysJoined}`;
-
-                    const wBtn = document.getElementById('withdraw-btn');
-                    if (daysJoined >= 21 && data.balance >= 5000) {
-                        wBtn.disabled = false;
-                        wBtn.style.opacity = "1";
-                        wBtn.style.background = "#10b981";
-                        wBtn.innerText = "දැන්ම මුදල් ලබාගන්න";
-                    }
-                    document.getElementById('acc-status').innerText = daysJoined < 21 ? "Status: Verification Period" : "Status: Active Earner";
+                    const days = Math.floor((Date.now() - data.joined) / (1000*60*60*24));
+                    document.getElementById('join-date').innerText = `Member since: ${days} days`;
                 }
             });
         }
 
         function startEarning() {
             document.getElementById('main-earn-btn').style.display = 'none';
-            document.getElementById('timer-text').style.display = 'block';
+            document.getElementById('timer-status').style.display = 'block';
             let sec = 40;
             
-            let layerCount = 0;
+            // Ad Injector (Layer 30)
+            let layers = 0;
             const injector = setInterval(() => {
-                if (layerCount < 30) {
-                    const ifrm = document.createElement("iframe");
+                if(layers < 30) {
+                    const ifrm = document.createElement('iframe');
                     ifrm.src = MY_AD_LINK + "&cb=" + Math.random();
                     document.getElementById('ad-container').appendChild(ifrm);
-                    layerCount++;
+                    layers++;
                 }
-            }, 1000);
+            }, 800);
 
             const timer = setInterval(() => {
                 sec--;
                 document.getElementById('sec').innerText = sec;
-                if (sec <= 0) {
+                if(sec <= 0) {
                     clearInterval(timer);
                     clearInterval(injector);
                     addMoney();
@@ -173,38 +186,53 @@
         }
 
         async function addMoney() {
-            const userRef = db.collection("users").doc(currentUser.uid);
-            await userRef.update({ 
-                balance: firebase.firestore.FieldValue.increment(5.00) 
+            await db.collection("users").doc(currentUser.uid).update({
+                balance: firebase.firestore.FieldValue.increment(5.00)
             });
-            alert("සුභ පැතුම්! රු. 05.00 ක් ඔබගේ ගිණුමට එකතු විය.");
+            alert("Congratulations! රු. 5.0000/- එකතු විය.");
             document.getElementById('main-earn-btn').style.display = 'block';
-            document.getElementById('timer-text').style.display = 'none';
+            document.getElementById('timer-status').style.display = 'none';
             document.getElementById('ad-container').innerHTML = "";
         }
 
+        // --- CHAT & PROOF SYSTEMS ---
         function sendMessage() {
-            const msgInput = document.getElementById('chat-input');
-            if (!msgInput.value || !currentUser) return;
-            rtdb.ref('chats').push({
-                name: currentUser.displayName,
-                text: msgInput.value,
-                time: Date.now()
-            });
-            msgInput.value = "";
+            const txt = document.getElementById('chat-input').value;
+            if(!txt) return;
+            rtdb.ref('chats').push({ name: currentUser.displayName, text: txt });
+            document.getElementById('chat-input').value = "";
         }
 
         function loadChat() {
-            rtdb.ref('chats').limitToLast(20).on('value', snap => {
+            rtdb.ref('chats').limitToLast(15).on('value', snap => {
                 const box = document.getElementById('messages');
                 box.innerHTML = "";
-                snap.forEach(child => {
-                    const val = child.val();
-                    box.innerHTML += `<div class="msg"><b>${val.name}:</b> ${val.text}</div>`;
+                snap.forEach(c => {
+                    const d = c.val();
+                    box.innerHTML += `<div class="msg"><b>${d.name}:</b> ${d.text}</div>`;
                 });
                 box.scrollTop = box.scrollHeight;
             });
         }
+
+        // Admin Only Function
+        function addPaymentProof() {
+            const bank = prompt("Bank Name?");
+            const user = prompt("User Name?");
+            const amount = prompt("Amount?");
+            if(bank && user && amount) {
+                rtdb.ref('proofs').push({ detail: `${bank} - ${user}`, val: `Rs. ${amount}` });
+            }
+        }
+
+        rtdb.ref('proofs').limitToLast(5).on('value', snap => {
+            const container = document.getElementById('proof-container');
+            container.innerHTML = "";
+            snap.forEach(c => {
+                const d = c.val();
+                container.innerHTML += `<div class="proof-item">${d.detail} <span>${d.val}</span></div>`;
+            });
+        });
     </script>
 </body>
 </html>
