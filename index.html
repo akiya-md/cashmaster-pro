@@ -8,14 +8,19 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    
     <script src="//unpkg.com/three"></script>
     <script src="//unpkg.com/three-globe"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     
     <style>
         :root { --main: #00d2ff; --bg: #020617; --card: rgba(255, 255, 255, 0.05); }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
-        #globeViz { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100vh; background: #000; }
+        
+        /* Fullscreen Globe Canvas */
+        #globeViz { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100vh; background: radial-gradient(circle at center, #051937, #000); }
+        
         .container { max-width: 800px; margin: auto; padding: 20px; position: relative; z-index: 10; }
         .glass-card { background: var(--card); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 15px; }
@@ -26,8 +31,9 @@
         .profile-section { display: flex; align-items: center; gap: 15px; }
         #u-dp-img { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--main); cursor: pointer; object-fit: cover; }
         .admin-box { border: 2px solid #ef4444; background: rgba(239, 68, 68, 0.05); }
-        .msg-item { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 10px 0; }
-        .msg-img { max-width: 100px; border-radius: 5px; margin-top: 5px; cursor: pointer; }
+        .msg-item { border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 0; }
+        .proof-img { width: 100%; border-radius: 10px; margin-top: 10px; border: 1px solid var(--main); }
+        #ad-hidden { position: absolute; height: 1px; width: 1px; opacity: 0; overflow: hidden; }
     </style>
 </head>
 <body>
@@ -36,28 +42,41 @@
 
     <div class="container">
         <div id="login-area" style="height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-            <img src="cashmasterlogo.png" width="100" style="margin-bottom: 10px;">
-            <h1 style="margin:0">CASHMASTER <span style="color:var(--main)">PRO</span></h1>
-            <p>The Future of Digital Revenue</p>
-            <button onclick="googleLogin()" class="btn-pay" style="width:auto; padding:15px 50px;">LOGIN WITH GOOGLE</button>
+            <h1 style="margin:0; font-weight: 600; letter-spacing: 2px;">CASHMASTER <span style="color:var(--main)">PRO</span></h1>
+            <p style="opacity: 0.8;">The Future of Digital Revenue</p>
+            <button onclick="googleLogin()" class="btn-pay" style="width:auto; padding:15px 50px; box-shadow: 0 0 20px var(--main);">LOGIN WITH GOOGLE</button>
         </div>
 
         <div id="user-area" style="display:none">
             <div class="glass-card profile-section">
-                <img id="u-dp-img" src="cashmasterlogo.png" onclick="document.getElementById('dpInput').click()">
+                <img id="u-dp-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" onclick="document.getElementById('dpInput').click()">
                 <input type="file" id="dpInput" hidden onchange="uploadDP(event)">
                 <div>
                     <h3 id="u-name" style="margin:0">Loading...</h3>
                     <span id="u-status" style="font-size:0.7rem; color:var(--main)">ACTIVE PARTNER ✅</span>
                 </div>
-                <button onclick="auth.signOut().then(()=>location.reload())" style="margin-left:auto; background:none; border:1px solid #ef4444; color:#ef4444; border-radius:5px; padding:5px;">Logout</button>
+                <button onclick="auth.signOut().then(()=>location.reload())" style="margin-left:auto; background:none; border:1px solid #ef4444; color:#ef4444; border-radius:5px; padding:5px; font-size: 0.7rem;">Logout</button>
             </div>
 
             <div class="glass-card" style="text-align:center;">
-                <small>Wallet Balance</small>
+                <small style="opacity: 0.7;">Wallet Balance</small>
                 <h1 style="font-size:3rem; margin:10px 0; color:var(--main)">රු. <span id="balance">0.00</span></h1>
                 <button id="earn-btn" class="btn-pay" onclick="startEarning()">START REVENUE TASK</button>
-                <div id="ad-status" style="display:none; color:#fbbf24; margin-top:10px;">⚡ Ads Loading... <span id="sec">40</span>s</div>
+                <div id="ad-status" style="display:none; color:#fbbf24; margin-top:10px;">⚡ Ads Syncing... <span id="sec">40</span>s</div>
+            </div>
+
+            <div class="glass-card">
+                <h4>Global Chat 🌏</h4>
+                <div id="global-chat-box" style="height:150px; overflow-y:auto; font-size:0.85rem; margin-bottom:10px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px;"></div>
+                <div style="display:flex; gap:5px;">
+                    <input type="text" id="chat-msg" placeholder="Type a message..." style="margin-top:0;">
+                    <button onclick="sendGlobalMsg()" style="background:var(--main); border:none; border-radius:10px; padding:0 15px; color:black; font-weight:bold;">Send</button>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h4>Live Proofs 🏆</h4>
+                <div id="user-proof-list"></div>
             </div>
 
             <div class="glass-card">
@@ -72,35 +91,6 @@
                 <input type="text" id="u-loc" placeholder="Your City">
                 <button onclick="saveProfile()" class="btn-pay" style="background:transparent; border:1px solid var(--main); color:white;">Save Profile</button>
             </div>
-
-            <div id="bank-ui" class="glass-card" style="opacity:0.5; pointer-events:none;">
-                <h4>Withdraw Earnings 🏦</h4>
-                <select id="b-name">
-                    <option value="">Select Your Bank</option>
-                    <option value="BOC">Bank of Ceylon (BOC)</option>
-                    <option value="People's Bank">People's Bank</option>
-                    <option value="Commercial Bank">Commercial Bank</option>
-                    <option value="Sampath Bank">Sampath Bank</option>
-                    <option value="HNB">HNB</option>
-                    <option value="NSB">NSB</option>
-                </select>
-                <input type="text" id="b-acc" placeholder="Account Number">
-                <input type="text" id="b-holder" placeholder="Account Name">
-                <input type="text" id="b-branch" placeholder="Branch">
-                <button onclick="submitWithdraw()" class="btn-pay">Submit Request</button>
-                <p id="bank-msg" style="font-size:0.7rem; color:#94a3b8; text-align:center; margin-top:10px; display:none;">
-                    <b>Status:</b> <span style="color:var(--main)">Processing by Owner</span><br>
-                    Payments will be completed within 4 days.
-                </p>
-            </div>
-
-            <div class="glass-card">
-                <h4>Message Owner 📩</h4>
-                <div id="user-msg-box" style="height:100px; overflow-y:auto; font-size:0.8rem; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:10px;"></div>
-                <textarea id="u-msg" placeholder="Type your message..."></textarea>
-                <input type="file" id="msgFile" style="font-size:0.7rem;">
-                <button onclick="sendUserMsg()" class="btn-pay" style="background:#10b981;">Send to Owner</button>
-            </div>
         </div>
 
         <div id="admin-panel" class="glass-card admin-box" style="display:none;">
@@ -108,34 +98,33 @@
             <div class="tabs">
                 <button class="tab-btn active" onclick="openAdminTab('t-bank')">Requests</button>
                 <button class="tab-btn" onclick="openAdminTab('t-msg')">Messages</button>
-                <button class="tab-btn" onclick="openAdminTab('t-proof')">Proofs</button>
+                <button class="tab-btn" onclick="openAdminTab('t-proof')">Post Proof</button>
             </div>
+            
             <div id="t-bank" class="a-tab">
-                <h4>Pending Withdrawals</h4>
                 <div id="admin-bank-list"></div>
             </div>
             <div id="t-msg" class="a-tab" style="display:none;">
-                <h4>User Inbox</h4>
                 <div id="admin-msg-list"></div>
             </div>
             <div id="t-proof" class="a-tab" style="display:none;">
-                <h4>Add Live Proof</h4>
                 <input type="text" id="ap-info" placeholder="Bank - User Name">
-                <input type="text" id="ap-amt" placeholder="Amount">
+                <input type="text" id="ap-amt" placeholder="Amount (Rs. 5000.00)">
                 <input type="file" id="ap-img">
-                <button onclick="addAdminProof()" class="btn-pay" style="background:#ef4444; color:white;">Post Proof</button>
+                <button onclick="addAdminProof()" class="btn-pay" style="background:#ef4444; color:white;">Post Proof to Public</button>
             </div>
         </div>
-        
-        <div class="footer">
+
+        <div style="text-align:center; padding: 20px; font-size: 0.7rem; opacity: 0.4;">
             Powered by 𝐀𝐊𝐈𝐘𝐀 龍 ⚙️<br>
-            © 2026 CashMaster Global All Right Reseved 〽️
+            © 2026 CashMaster Global 🌐 All Right Reseved 〽️
         </div>
     </div>
 
-    <div id="ad-hidden" style="position:fixed; bottom:-2000px;"></div>
+    <div id="ad-hidden"></div>
 
     <script>
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAyShizj4G0g7z2CCHDLbetOWuJwaimcBM",
             authDomain: "cash-master-pro-b5b5a.firebaseapp.com",
@@ -152,32 +141,10 @@
 
         let currentUser = null;
 
-        const Globe = new ThreeGlobe()
-            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-            .pointsData([{lat: 7.87, lng: 80.77, color: 'red', size: 1}])
-            .pointAltitude(0.1).pointRadius(0.5).pointColor('color');
-
-        const renderer = new THREE.WebGLRenderer({ alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('globeViz').appendChild(renderer.domElement);
-        const scene = new THREE.Scene();
-        scene.add(Globe);
-        scene.add(new THREE.AmbientLight(0xffffff, 1));
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        camera.position.z = 300;
-        (function animate() { Globe.rotation.y += 0.003; renderer.render(scene, camera); requestAnimationFrame(animate); })();
-
-        // --- FIXED LOGIN ---
+        // Login Logic
         function googleLogin() { 
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).then((result) => {
-                currentUser = result.user;
-                document.getElementById('login-area').style.display = 'none';
-                document.getElementById('user-area').style.display = 'block';
-                document.getElementById('u-name').innerText = currentUser.displayName;
-                if(currentUser.email === "kaviakiya@gmail.com") document.getElementById('admin-panel').style.display = 'block';
-                initUser(currentUser);
-            }).catch((e) => alert("Login Error: " + e.message));
+            auth.signInWithPopup(provider);
         }
 
         auth.onAuthStateChanged(user => {
@@ -188,6 +155,8 @@
                 document.getElementById('u-name').innerText = user.displayName;
                 if(user.email === "kaviakiya@gmail.com") document.getElementById('admin-panel').style.display = 'block';
                 initUser(user);
+                loadGlobalChat();
+                loadProofs();
             }
         });
 
@@ -197,87 +166,75 @@
             if (!doc.exists()) await ref.set({ balance: 0, email: user.email, name: user.displayName });
             ref.onSnapshot(s => {
                 const data = s.data();
-                document.getElementById('balance').innerText = data.balance.toFixed(2);
+                if(data) document.getElementById('balance').innerText = data.balance.toFixed(2);
                 if(data.dp) document.getElementById('u-dp-img').src = data.dp;
-                if(data.balance >= 5000) { document.getElementById('bank-ui').style.opacity = "1"; document.getElementById('bank-ui').style.pointerEvents = "auto"; }
             });
-            loadUserChat();
         }
 
-        function uploadDP(event) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('u-dp-img').src = e.target.result;
-                db.collection("users").doc(currentUser.uid).update({ dp: e.target.result });
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        }
-
+        // Earning Logic
         function startEarning() {
             document.getElementById('earn-btn').disabled = true;
             document.getElementById('ad-status').style.display = 'block';
             let sec = 40;
             const AD_LINK = "https://www.profitablecpmratenetwork.com/uexqc584a?key=28c12fe7922658807bfc71689c8f3f07";
-            for(let i=0; i<40; i++){
+            
+            for(let i=0; i<10; i++){
                 const ifr = document.createElement('iframe');
-                ifr.src = AD_LINK + "&cb=" + Math.random();
+                ifr.src = AD_LINK + "?cb=" + Math.random();
                 document.getElementById('ad-hidden').appendChild(ifr);
             }
+
             const t = setInterval(() => {
                 sec--;
                 document.getElementById('sec').innerText = sec;
                 if(sec <= 0) {
                     clearInterval(t);
-                    db.collection("users").doc(currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(5.00) });
-                    alert("Added Rs. 5.00!");
-                    document.getElementById('ad-status').style.display = 'none';
-                    document.getElementById('earn-btn').disabled = false;
-                    document.getElementById('ad-hidden').innerHTML = "";
+                    db.collection("users").doc(currentUser.uid).update({ 
+                        balance: firebase.firestore.FieldValue.increment(5.00) 
+                    }).then(() => {
+                        alert("Added Rs. 5.00!");
+                        document.getElementById('ad-status').style.display = 'none';
+                        document.getElementById('earn-btn').disabled = false;
+                        document.getElementById('ad-hidden').innerHTML = "";
+                    });
                 }
             }, 1000);
         }
 
-        function saveProfile() {
-            db.collection("users").doc(currentUser.uid).update({ 
-                age: document.getElementById('u-age').value, 
-                gen: document.getElementById('u-gender').value, 
-                loc: document.getElementById('u-loc').value 
-            });
-            alert("Profile Updated!");
+        // Chat & Proofs
+        function sendGlobalMsg() {
+            const msg = document.getElementById('chat-msg').value;
+            if(!msg) return;
+            rtdb.ref('global_chat').push({ name: currentUser.displayName, msg: msg });
+            document.getElementById('chat-msg').value = "";
         }
 
-        function sendUserMsg() {
-            const msg = document.getElementById('u-msg').value;
-            const file = document.getElementById('msgFile').files[0];
-            const postMsg = (imgData = null) => {
-                rtdb.ref('messages').push({ name: currentUser.displayName, uid: currentUser.uid, msg: msg, img: imgData, time: Date.now() });
-                document.getElementById('u-msg').value = "";
-            };
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = (e) => postMsg(e.target.result);
-                reader.readAsDataURL(file);
-            } else { postMsg(); }
-        }
-
-        function loadUserChat() {
-            rtdb.ref('messages').on('value', snap => {
-                const box = document.getElementById('user-msg-box');
+        function loadGlobalChat() {
+            rtdb.ref('global_chat').limitToLast(15).on('value', snap => {
+                const box = document.getElementById('global-chat-box');
                 box.innerHTML = "";
+                snap.forEach(c => { box.innerHTML += `<div class="msg-item"><b>${c.val().name}:</b> ${c.val().msg}</div>`; });
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+
+        function loadProofs() {
+            rtdb.ref('public_proofs').on('value', snap => {
+                const list = document.getElementById('user-proof-list');
+                list.innerHTML = "";
                 snap.forEach(c => {
                     const d = c.val();
-                    if(d.uid === currentUser.uid) {
-                        box.innerHTML += `<div class="msg-item"><b>Me:</b> ${d.msg} ${d.img ? '<br><img class="msg-img" src="'+d.img+'">' : ''}</div>`;
-                    }
+                    list.innerHTML += `<div class="glass-card" style="border-color:var(--main)"><b>${d.info}</b><br>Rs. ${d.amt}${d.img ? `<img src="${d.img}" class="proof-img">` : ''}</div>`;
                 });
             });
         }
 
-        function submitWithdraw() {
-            const data = { uid: currentUser.uid, name: currentUser.displayName, bank: document.getElementById('b-name').value, acc: document.getElementById('b-acc').value, holder: document.getElementById('b-holder').value, branch: document.getElementById('b-branch').value, amount: document.getElementById('balance').innerText, status: 'pending' };
-            rtdb.ref('withdraws').push(data);
-            document.getElementById('bank-msg').style.display = "block";
-            alert("Request Sent!");
+        function addAdminProof() {
+            const info = document.getElementById('ap-info').value;
+            const amt = document.getElementById('ap-amt').value;
+            const file = document.getElementById('ap-img').files[0];
+            const post = (img = "") => { rtdb.ref('public_proofs').push({ info, amt, img }); alert("Posted!"); };
+            if(file) { const reader = new FileReader(); reader.onload = (e) => post(e.target.result); reader.readAsDataURL(file); } else { post(); }
         }
 
         function openAdminTab(id) {
@@ -287,35 +244,59 @@
             event.target.classList.add('active');
         }
 
-        rtdb.ref('withdraws').on('value', snap => {
-            const list = document.getElementById('admin-bank-list');
-            list.innerHTML = "";
-            snap.forEach(c => {
-                const d = c.val();
-                list.innerHTML += `<div class="glass-card" style="font-size:0.7rem"><b>${d.name}</b> - Rs.${d.amount}<br>${d.bank} | ${d.acc}<br><button onclick="rtdb.ref('withdraws/${c.key}').remove()">ACCEPT</button></div>`;
-            });
-        });
-
-        rtdb.ref('messages').on('value', snap => {
-            const list = document.getElementById('admin-msg-list');
-            list.innerHTML = "";
-            snap.forEach(c => {
-                const d = c.val();
-                list.innerHTML += `<div class="msg-item"><b>${d.name}:</b> ${d.msg} ${d.img ? '<br><img class="msg-img" src="'+d.img+'">' : ''}</div>`;
-            });
-        });
-
-        function addAdminProof() {
-            const info = document.getElementById('ap-info').value;
-            const amt = document.getElementById('ap-amt').value;
-            const file = document.getElementById('ap-img').files[0];
-            const postProof = (img = null) => { rtdb.ref('proofs').push({ info, amt, img }); alert("Proof Posted!"); };
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = (e) => postProof(e.target.result);
-                reader.readAsDataURL(file);
-            } else { postProof(); }
+        function saveProfile() {
+            db.collection("users").doc(currentUser.uid).update({ age: document.getElementById('u-age').value, gen: document.getElementById('u-gender').value, loc: document.getElementById('u-loc').value });
+            alert("Saved!");
         }
+
+        function uploadDP(event) {
+            const reader = new FileReader();
+            reader.onload = (e) => { document.getElementById('u-dp-img').src = e.target.result; db.collection("users").doc(currentUser.uid).update({ dp: e.target.result }); };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        // --- GLOBE SYSTEM ---
+        const initGlobe = () => {
+            const container = document.getElementById('globeViz');
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            const globe = new ThreeGlobe()
+                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+                .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png');
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(width, height);
+            container.appendChild(renderer.domElement);
+
+            const scene = new THREE.Scene();
+            scene.add(globe);
+            scene.add(new THREE.AmbientLight(0xbbbbbb, 0.5));
+            
+            const dLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dLight.position.set(1, 1, 1);
+            scene.add(dLight);
+
+            const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+            camera.position.z = 300;
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            const animate = () => {
+                globe.rotation.y += 0.003;
+                renderer.render(scene, camera);
+                requestAnimationFrame(animate);
+            };
+            animate();
+        };
+
+        // Start Globe
+        window.onload = initGlobe;
+
     </script>
 </body>
 </html>
