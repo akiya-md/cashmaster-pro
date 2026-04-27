@@ -18,7 +18,7 @@
         :root { --main: #00d2ff; --bg: #020617; --card: rgba(255, 255, 255, 0.05); }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
         
-        /* Fullscreen Globe Canvas */
+        /* Fixed Globe for all areas */
         #globeViz { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100vh; background: radial-gradient(circle at center, #051937, #000); }
         
         .container { max-width: 800px; margin: auto; padding: 20px; position: relative; z-index: 10; }
@@ -30,10 +30,8 @@
         .btn-pay { background: var(--main); color: black; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 15px; }
         .profile-section { display: flex; align-items: center; gap: 15px; }
         #u-dp-img { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--main); cursor: pointer; object-fit: cover; }
-        .admin-box { border: 2px solid #ef4444; background: rgba(239, 68, 68, 0.05); }
+        .admin-box { border: 2px solid #ef4444; background: rgba(239, 68, 68, 0.1); }
         .msg-item { border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 0; }
-        .proof-img { width: 100%; border-radius: 10px; margin-top: 10px; border: 1px solid var(--main); }
-        #ad-hidden { position: absolute; height: 1px; width: 1px; opacity: 0; overflow: hidden; }
     </style>
 </head>
 <body>
@@ -62,7 +60,7 @@
                 <small style="opacity: 0.7;">Wallet Balance</small>
                 <h1 style="font-size:3rem; margin:10px 0; color:var(--main)">රු. <span id="balance">0.00</span></h1>
                 <button id="earn-btn" class="btn-pay" onclick="startEarning()">START REVENUE TASK</button>
-                <div id="ad-status" style="display:none; color:#fbbf24; margin-top:10px;">⚡ Ads Syncing... <span id="sec">40</span>s</div>
+                <div id="ad-status" style="display:none; color:#fbbf24; margin-top:10px;">⚡ Ads Loading... Do not close the window! <span id="sec">40</span>s</div>
             </div>
 
             <div class="glass-card">
@@ -117,14 +115,12 @@
 
         <div style="text-align:center; padding: 20px; font-size: 0.7rem; opacity: 0.4;">
             Powered by 𝐀𝐊𝐈𝐘𝐀 龍 ⚙️<br>
-            © 2026 CashMaster Global 🌐 All Right Reseved 〽️
+            © 2026 CashMaster Global 🌐 All Rights Reserved 〽️
         </div>
     </div>
 
-    <div id="ad-hidden"></div>
-
     <script>
-        // Firebase Config
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAyShizj4G0g7z2CCHDLbetOWuJwaimcBM",
             authDomain: "cash-master-pro-b5b5a.firebaseapp.com",
@@ -141,7 +137,6 @@
 
         let currentUser = null;
 
-        // Login Logic
         function googleLogin() { 
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider);
@@ -171,37 +166,38 @@
             });
         }
 
-        // Earning Logic
+        // --- FIXED EARNING LOGIC (Ads Window Open) ---
         function startEarning() {
-            document.getElementById('earn-btn').disabled = true;
-            document.getElementById('ad-status').style.display = 'block';
+            const earnBtn = document.getElementById('earn-btn');
+            const adStatus = document.getElementById('ad-status');
+            const secSpan = document.getElementById('sec');
+            
+            earnBtn.disabled = true;
+            adStatus.style.display = 'block';
+            
             let sec = 40;
             const AD_LINK = "https://www.profitablecpmratenetwork.com/uexqc584a?key=28c12fe7922658807bfc71689c8f3f07";
             
-            for(let i=0; i<10; i++){
-                const ifr = document.createElement('iframe');
-                ifr.src = AD_LINK + "?cb=" + Math.random();
-                document.getElementById('ad-hidden').appendChild(ifr);
-            }
+            // IFRAME වෙනුවට Ads අලුත් Tab එකක Open කිරීම (එතකොට තමයි Revenue හැදෙන්නේ)
+            window.open(AD_LINK, '_blank');
 
             const t = setInterval(() => {
                 sec--;
-                document.getElementById('sec').innerText = sec;
+                secSpan.innerText = sec;
                 if(sec <= 0) {
                     clearInterval(t);
                     db.collection("users").doc(currentUser.uid).update({ 
                         balance: firebase.firestore.FieldValue.increment(5.00) 
                     }).then(() => {
-                        alert("Added Rs. 5.00!");
-                        document.getElementById('ad-status').style.display = 'none';
-                        document.getElementById('earn-btn').disabled = false;
-                        document.getElementById('ad-hidden').innerHTML = "";
+                        alert("Task Complete! Rs. 5.00 Added ✅");
+                        adStatus.style.display = 'none';
+                        earnBtn.disabled = false;
                     });
                 }
             }, 1000);
         }
 
-        // Chat & Proofs
+        // Global Chat
         function sendGlobalMsg() {
             const msg = document.getElementById('chat-msg').value;
             if(!msg) return;
@@ -218,13 +214,14 @@
             });
         }
 
+        // Proofs
         function loadProofs() {
             rtdb.ref('public_proofs').on('value', snap => {
                 const list = document.getElementById('user-proof-list');
                 list.innerHTML = "";
                 snap.forEach(c => {
                     const d = c.val();
-                    list.innerHTML += `<div class="glass-card" style="border-color:var(--main)"><b>${d.info}</b><br>Rs. ${d.amt}${d.img ? `<img src="${d.img}" class="proof-img">` : ''}</div>`;
+                    list.innerHTML += `<div class="glass-card" style="border-color:var(--main)"><b>${d.info}</b><br>Rs. ${d.amt}${d.img ? `<img src="${d.img}" style="width:100%; border-radius:10px; margin-top:10px;">` : ''}</div>`;
                 });
             });
         }
@@ -233,10 +230,11 @@
             const info = document.getElementById('ap-info').value;
             const amt = document.getElementById('ap-amt').value;
             const file = document.getElementById('ap-img').files[0];
-            const post = (img = "") => { rtdb.ref('public_proofs').push({ info, amt, img }); alert("Posted!"); };
+            const post = (img = "") => { rtdb.ref('public_proofs').push({ info, amt, img }); alert("Proof Published!"); };
             if(file) { const reader = new FileReader(); reader.onload = (e) => post(e.target.result); reader.readAsDataURL(file); } else { post(); }
         }
 
+        // Tabs & Settings
         function openAdminTab(id) {
             document.querySelectorAll('.a-tab').forEach(t => t.style.display = 'none');
             document.getElementById(id).style.display = 'block';
@@ -246,7 +244,7 @@
 
         function saveProfile() {
             db.collection("users").doc(currentUser.uid).update({ age: document.getElementById('u-age').value, gen: document.getElementById('u-gender').value, loc: document.getElementById('u-loc').value });
-            alert("Saved!");
+            alert("Profile Saved!");
         }
 
         function uploadDP(event) {
@@ -255,30 +253,29 @@
             reader.readAsDataURL(event.target.files[0]);
         }
 
-        // --- GLOBE SYSTEM ---
+        // --- GLOBE SYSTEM (Global Render) ---
         const initGlobe = () => {
             const container = document.getElementById('globeViz');
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-
+            
             const globe = new ThreeGlobe()
                 .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                 .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png');
 
             const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(width, height);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
             container.appendChild(renderer.domElement);
 
             const scene = new THREE.Scene();
             scene.add(globe);
-            scene.add(new THREE.AmbientLight(0xbbbbbb, 0.5));
+            scene.add(new THREE.AmbientLight(0xbbbbbb, 1));
             
-            const dLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            const dLight = new THREE.DirectionalLight(0xffffff, 0.6);
             dLight.position.set(1, 1, 1);
             scene.add(dLight);
 
-            const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-            camera.position.z = 300;
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 320;
 
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
@@ -287,14 +284,13 @@
             });
 
             const animate = () => {
-                globe.rotation.y += 0.003;
+                globe.rotation.y += 0.002;
                 renderer.render(scene, camera);
                 requestAnimationFrame(animate);
             };
             animate();
         };
 
-        // Start Globe
         window.onload = initGlobe;
 
     </script>
