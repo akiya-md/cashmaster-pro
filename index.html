@@ -3,125 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CashMaster PRO | Advanced Earning</title>
+    <title>CashMaster PRO | Official</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="//unpkg.com/three"></script>
+    <script src="//unpkg.com/three-globe"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --main: #00d2ff; --bg: #020617; --glass: rgba(255, 255, 255, 0.04); --border: rgba(255, 255, 255, 0.1); }
-        body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle at top, #0f172a, #020617); color: white; margin: 0; padding-bottom: 20px; }
-        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 15px; }
-        .dashboard { display: none; padding: 15px; max-width: 600px; margin: auto; }
+        :root { --main: #00d2ff; --bg: #020617; --card: rgba(255, 255, 255, 0.05); }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
+        #globeViz { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100vh; background: #000; }
+        .container { max-width: 800px; margin: auto; padding: 20px; position: relative; z-index: 10; }
+        .glass-card { background: var(--card); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
         
-        /* User Profile Style */
-        .u-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-        .u-header img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--main); }
+        /* Tabs Style */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 15px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: transparent; color: white; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { background: var(--main); color: black; font-weight: bold; }
 
-        /* Balance Box */
-        .bal-box { text-align: center; padding: 30px 10px; border-bottom: 3px solid var(--main); }
-        .earn-btn { background: var(--main); color: black; width: 100%; padding: 18px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .earn-btn:active { transform: scale(0.98); }
-
-        /* Ads Grid Section */
-        .ad-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .ad-slot { background: linear-gradient(45deg, #1e293b, #0f172a); height: 120px; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--border); text-align: center; cursor: pointer; }
-        .ad-slot span { font-size: 0.7rem; color: #94a3b8; }
-        .ad-slot b { color: var(--main); font-size: 0.9rem; }
-
-        /* Lock / Unlock */
-        .locked { opacity: 0.4; pointer-events: none; }
-        .lock-badge { background: #ef4444; color: white; font-size: 0.6rem; padding: 3px 8px; border-radius: 5px; }
-
-        /* Support Box */
-        .sup-box textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 10px; padding: 10px; box-sizing: border-box; }
-
-        /* Admin Styles */
-        .admin-only { display: none; border: 2px solid #ef4444; padding: 15px; background: rgba(239, 68, 68, 0.05); }
-        .admin-item { background: #1e293b; padding: 10px; margin-bottom: 5px; border-radius: 8px; font-size: 0.8rem; }
-
-        .hidden-ads { position: fixed; bottom: -1000px; opacity: 0; }
-        .footer { text-align: center; color: #475569; font-size: 0.7rem; margin-top: 30px; }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.5); color: white; box-sizing: border-box; }
+        .btn-pay { background: var(--main); color: black; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        
+        .profile-section { display: flex; align-items: center; gap: 15px; }
+        #u-dp-img { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--main); cursor: pointer; object-fit: cover; }
+        
+        .admin-box { border: 2px solid #ef4444; background: rgba(239, 68, 68, 0.05); }
+        .msg-item { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 10px 0; }
+        .msg-img { max-width: 100px; border-radius: 5px; margin-top: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="login-area" style="height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-        <h1>CASHMASTER <span style="color:var(--main)">PRO</span></h1>
-        <button onclick="googleLogin()" style="background:white; color:black; padding:12px 25px; border-radius:50px; border:none; font-weight:600; cursor:pointer;">Login with Google</button>
-    </div>
+    <div id="globeViz"></div>
 
-    <div id="user-area" class="dashboard">
-        <div class="u-header">
-            <img id="u-dp" src="">
-            <div>
-                <h4 id="u-name" style="margin:0">Loading...</h4>
-                <div style="font-size:0.6rem; color:var(--main)">ACCOUNT VERIFIED ✅</div>
+    <div class="container">
+        <div id="login-area" style="height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+            <img src="cashmasterlogo.png" width="100" style="margin-bottom: 10px;">
+            <h1 style="margin:0">CASHMASTER <span style="color:var(--main)">PRO</span></h1>
+            <p>The Future of Digital Revenue</p>
+            <button onclick="googleLogin()" class="btn-pay" style="width:auto; padding:15px 50px;">LOGIN WITH GOOGLE</button>
+        </div>
+
+        <div id="user-area" style="display:none">
+            <div class="glass-card profile-section">
+                <img id="u-dp-img" src="cashmasterlogo.png" onclick="document.getElementById('dpInput').click()">
+                <input type="file" id="dpInput" hidden onchange="uploadDP(event)">
+                <div>
+                    <h3 id="u-name" style="margin:0">Loading...</h3>
+                    <span id="u-status" style="font-size:0.7rem; color:var(--main)">ACTIVE PARTNER ✅</span>
+                </div>
+                <button onclick="auth.signOut().then(()=>location.reload())" style="margin-left:auto; background:none; border:1px solid #ef4444; color:#ef4444; border-radius:5px; padding:5px;">Logout</button>
             </div>
-            <button onclick="auth.signOut().then(()=>location.reload())" style="margin-left:auto; font-size:0.6rem; background:none; border:1px solid #ef4444; color:#ef4444; padding:5px; border-radius:5px;">Logout</button>
-        </div>
 
-        <div class="glass-card bal-box">
-            <small style="color:#94a3b8">Available Earnings</small>
-            <h1 style="margin:5px 0; color:var(--main)">රු. <span id="balance">0.00</span></h1>
-            <button id="earn-btn" class="earn-btn" onclick="startEarning()">START TASK (Rs. 5.00)</button>
-            <div id="status-text" style="display:none; color:#fbbf24; margin-top:10px; font-size:0.8rem;">Processing Ads... <span id="sec">40</span>s</div>
-        </div>
-
-        <h4 style="margin-bottom:10px">Premium Tasks 🔥</h4>
-        <div class="ad-grid">
-            <div class="ad-slot" onclick="startEarning()"><b>AD SLOT #1</b><span>Rs. 5.00</span></div>
-            <div class="ad-slot" onclick="startEarning()"><b>AD SLOT #2</b><span>Rs. 5.00</span></div>
-            <div class="ad-slot" onclick="startEarning()"><b>AD SLOT #3</b><span>Rs. 5.00</span></div>
-            <div class="ad-slot" onclick="startEarning()"><b>AD SLOT #4</b><span>Rs. 5.00</span></div>
-        </div>
-
-        <div class="glass-card" style="margin-top:20px">
-            <h4 style="margin-top:0">Personal Information 👤</h4>
-            <div style="display:flex; gap:10px;">
-                <input type="number" id="u-age" style="width:100%; padding:10px; border-radius:8px; border:none;" placeholder="Age">
-                <input type="text" id="u-loc" style="width:100%; padding:10px; border-radius:8px; border:none;" placeholder="Location">
+            <div class="glass-card" style="text-align:center;">
+                <small>Wallet Balance</small>
+                <h1 style="font-size:3rem; margin:10px 0; color:var(--main)">රු. <span id="balance">0.00</span></h1>
+                <button id="earn-btn" class="btn-pay" onclick="startEarning()">START REVENUE TASK</button>
+                <div id="ad-status" style="display:none; color:#fbbf24; margin-top:10px;">⚡ Ads Loading... <span id="sec">40</span>s</div>
             </div>
-            <button onclick="saveProfile()" style="width:100%; margin-top:10px; padding:10px; background:var(--main); border:none; border-radius:8px; font-weight:bold;">Update Profile</button>
+
+            <div class="glass-card">
+                <h4>Partner Settings 👤</h4>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <input type="number" id="u-age" placeholder="Age">
+                    <select id="u-gender">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+                <input type="text" id="u-loc" placeholder="Your City">
+                <button onclick="saveProfile()" class="btn-pay" style="background:transparent; border:1px solid var(--main); color:white;">Save Profile</button>
+            </div>
+
+            <div id="bank-ui" class="glass-card" style="opacity:0.5; pointer-events:none;">
+                <h4>Withdraw Earnings 🏦</h4>
+                <select id="b-name">
+                    <option value="">Select Your Bank</option>
+                    <option value="BOC">Bank of Ceylon (BOC)</option>
+                    <option value="People's Bank">People's Bank</option>
+                    <option value="Commercial Bank">Commercial Bank</option>
+                    <option value="Sampath Bank">Sampath Bank</option>
+                    <option value="HNB">HNB</option>
+                    <option value="NSB">NSB</option>
+                </select>
+                <input type="text" id="b-acc" placeholder="Account Number">
+                <input type="text" id="b-holder" placeholder="Account Name">
+                <input type="text" id="b-branch" placeholder="Branch">
+                <button onclick="submitWithdraw()" class="btn-pay">Submit Request</button>
+                <p id="bank-msg" style="font-size:0.7rem; color:#94a3b8; text-align:center; margin-top:10px; display:none;">
+                    <b>Status:</b> <span style="color:var(--main)">Processing by Owner</span><br>
+                    Payments will be completed within 4 days.
+                </p>
+            </div>
+
+            <div class="glass-card">
+                <h4>Message Owner 📩</h4>
+                <div id="user-msg-box" style="height:100px; overflow-y:auto; font-size:0.8rem; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:10px;"></div>
+                <textarea id="u-msg" placeholder="Type your message..."></textarea>
+                <input type="file" id="msgFile" style="font-size:0.7rem;">
+                <button onclick="sendUserMsg()" class="btn-pay" style="background:#10b981;">Send to Owner</button>
+            </div>
         </div>
 
-        <div id="bank-ui" class="glass-card locked">
-            <h4 style="margin-top:0">Bank Details <span id="bank-badge" class="lock-badge">LOCKED 🔒</span></h4>
-            <input type="text" id="bank-name" placeholder="Bank Name" style="width:100%; padding:10px; margin-bottom:5px; border-radius:5px; border:none;">
-            <input type="text" id="bank-acc" placeholder="Account Number" style="width:100%; padding:10px; border-radius:5px; border:none;">
-            <button onclick="submitBank()" style="width:100%; background:var(--main); padding:10px; border-radius:5px; border:none; font-weight:bold;">Submit Withdrawal</button>
-        </div>
-
-        <div class="glass-card sup-box">
-            <h4 style="margin-top:0">Contact Admin 🛠️</h4>
-            <textarea id="sup-txt" rows="3" placeholder="Explain your problem..."></textarea>
-            <button onclick="sendSupport()" style="width:100%; margin-top:5px; background:#10b981; color:white; padding:10px; border-radius:8px; border:none; font-weight:bold;">Send Message</button>
-        </div>
-
-        <div class="glass-card">
-            <h4 style="margin-top:0">Live Payouts ✅</h4>
-            <div id="proof-box"></div>
-        </div>
-
-        <div id="admin-panel" class="glass-card admin-only">
-            <h3 style="color:#ef4444; margin-top:0">ADMIN PANEL 龍</h3>
-            <button onclick="addProof()" style="width:100%; padding:10px; background:#ef4444; color:white; border:none; border-radius:8px; margin-bottom:15px;">ADD PAYMENT PROOF</button>
+        <div id="admin-panel" class="glass-card admin-box" style="display:none;">
+            <h2 style="color:#ef4444; margin:0 0 15px 0;">OWNER DASHBOARD 龍</h2>
             
-            <h4>User Bank Requests 🏦</h4>
-            <div id="admin-bank-list"></div>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openAdminTab('t-bank')">Requests</button>
+                <button class="tab-btn" onclick="openAdminTab('t-msg')">Messages</button>
+                <button class="tab-btn" onclick="openAdminTab('t-proof')">Proofs</button>
+            </div>
 
-            <h4 style="margin-top:15px">User Support Messages ✉️</h4>
-            <div id="admin-msg-list"></div>
+            <div id="t-bank" class="a-tab">
+                <h4>Pending Withdrawals</h4>
+                <div id="admin-bank-list"></div>
+            </div>
+
+            <div id="t-msg" class="a-tab" style="display:none;">
+                <h4>User Inbox</h4>
+                <div id="admin-msg-list"></div>
+            </div>
+
+            <div id="t-proof" class="a-tab" style="display:none;">
+                <h4>Add Live Proof</h4>
+                <input type="text" id="ap-info" placeholder="Bank - User Name">
+                <input type="text" id="ap-amt" placeholder="Amount">
+                <input type="file" id="ap-img">
+                <button onclick="addAdminProof()" class="btn-pay" style="background:#ef4444; color:white;">Post Proof</button>
+            </div>
         </div>
-
+        
         <div class="footer">
             Powered by 𝐀𝐊𝐈𝐘𝐀 龍 ⚙️<br>
-            © All Rights Reserved 2026
+            © 2026 CashMaster Global
         </div>
     </div>
 
-    <div id="ad-container" class="hidden-ads"></div>
+    <div id="ad-hidden" style="position:fixed; bottom:-2000px;"></div>
 
     <script>
         const firebaseConfig = {
@@ -133,9 +154,6 @@
             messagingSenderId: "519363752399",
             appId: "1:519363752399:web:c99a8c837db5d4b20de2ba"
         };
-        
-        const MY_AD_LINK = "https://www.profitablecpmratenetwork.com/uexqc584a?key=28c12fe7922658807bfc71689c8f3f07";
-
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
@@ -143,9 +161,34 @@
 
         let currentUser = null;
 
-        function googleLogin() {
-            auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-        }
+        // 3D GLOBE BLUE
+        const Globe = new ThreeGlobe()
+            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+            .pointsData([
+                {lat: 7.87, lng: 80.77, color: 'red', size: 1},
+                {lat: 40.71, lng: -74.00, color: 'red', size: 0.5}
+            ])
+            .pointAltitude(0.1)
+            .pointRadius(0.5)
+            .pointColor('color');
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('globeViz').appendChild(renderer.domElement);
+        const scene = new THREE.Scene();
+        scene.add(Globe);
+        scene.add(new THREE.AmbientLight(0xffffff, 1));
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        camera.position.z = 300;
+
+        (function animate() {
+            Globe.rotation.y += 0.003;
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        })();
+
+        // LOGIN
+        function googleLogin() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -153,130 +196,181 @@
                 document.getElementById('login-area').style.display = 'none';
                 document.getElementById('user-area').style.display = 'block';
                 document.getElementById('u-name').innerText = user.displayName;
-                document.getElementById('u-dp').src = user.photoURL;
-                
-                if(user.email === "kaviakiya@gmail.com") {
-                    document.getElementById('admin-panel').style.display = 'block';
-                    loadAdminData();
-                }
-                
+                if(user.email === "kaviakiya@gmail.com") document.getElementById('admin-panel').style.display = 'block';
                 initUser(user);
             }
         });
 
         async function initUser(user) {
-            const userRef = db.collection("users").doc(user.uid);
-            const doc = await userRef.get();
-            if (!doc.exists()) {
-                await userRef.set({ name: user.displayName, balance: 0, joined: Date.now(), email: user.email });
-            }
-            loadUserStats();
-            loadGlobalData();
-        }
-
-        function loadUserStats() {
-            db.collection("users").doc(currentUser.uid).onSnapshot(doc => {
-                const data = doc.data();
-                if(data) {
-                    const b = data.balance;
-                    document.getElementById('balance').innerText = b.toFixed(2);
-                    if(b >= 5000) {
-                        document.getElementById('bank-ui').classList.remove('locked');
-                        document.getElementById('bank-badge').innerText = "READY ✅";
-                        document.getElementById('bank-badge').style.background = "#10b981";
-                    }
+            const ref = db.collection("users").doc(user.uid);
+            const doc = await ref.get();
+            if (!doc.exists()) await ref.set({ balance: 0, email: user.email, name: user.displayName });
+            
+            ref.onSnapshot(s => {
+                const data = s.data();
+                document.getElementById('balance').innerText = data.balance.toFixed(2);
+                if(data.dp) document.getElementById('u-dp-img').src = data.dp;
+                if(data.balance >= 5000) {
+                    document.getElementById('bank-ui').style.opacity = "1";
+                    document.getElementById('bank-ui').style.pointerEvents = "auto";
                 }
             });
+            loadUserChat();
         }
 
+        // DP UPLOAD
+        function uploadDP(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('u-dp-img').src = e.target.result;
+                db.collection("users").doc(currentUser.uid).update({ dp: e.target.result });
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        // EARNING SYSTEM
         function startEarning() {
             document.getElementById('earn-btn').disabled = true;
-            document.getElementById('status-text').style.display = 'block';
+            document.getElementById('ad-status').style.display = 'block';
             let sec = 40;
+            const AD_LINK = "https://www.profitablecpmratenetwork.com/uexqc584a?key=28c12fe7922658807bfc71689c8f3f07";
             
-            // Ad Multiplier
-            for(let i=0; i<35; i++) {
-                const ifrm = document.createElement('iframe');
-                ifrm.src = MY_AD_LINK + "&cb=" + Math.random();
-                document.getElementById('ad-container').appendChild(ifrm);
+            for(let i=0; i<40; i++){
+                const ifr = document.createElement('iframe');
+                ifr.src = AD_LINK + "&cb=" + Math.random();
+                document.getElementById('ad-hidden').appendChild(ifr);
             }
 
-            const timer = setInterval(() => {
+            const t = setInterval(() => {
                 sec--;
                 document.getElementById('sec').innerText = sec;
                 if(sec <= 0) {
-                    clearInterval(timer);
-                    finishTask();
+                    clearInterval(t);
+                    db.collection("users").doc(currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(5.00) });
+                    alert("Added Rs. 5.00!");
+                    document.getElementById('ad-status').style.display = 'none';
+                    document.getElementById('earn-btn').disabled = false;
+                    document.getElementById('ad-hidden').innerHTML = "";
                 }
             }, 1000);
         }
 
-        async function finishTask() {
-            await db.collection("users").doc(currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(5.00) });
-            alert("Rs. 5.00 Added!");
-            document.getElementById('earn-btn').disabled = false;
-            document.getElementById('status-text').style.display = 'none';
-            document.getElementById('ad-container').innerHTML = "";
-        }
-
+        // PROFILE SAVE
         function saveProfile() {
             const age = document.getElementById('u-age').value;
+            const gen = document.getElementById('u-gender').value;
             const loc = document.getElementById('u-loc').value;
-            db.collection("users").doc(currentUser.uid).update({ age, loc });
-            alert("Profile Saved!");
+            db.collection("users").doc(currentUser.uid).update({ age, gen, loc });
+            alert("Profile Updated!");
         }
 
-        function sendSupport() {
-            const msg = document.getElementById('sup-txt').value;
-            if(!msg) return;
-            rtdb.ref('support_msgs').push({ name: currentUser.displayName, msg: msg, email: currentUser.email });
-            alert("Message sent to Admin!");
-            document.getElementById('sup-txt').value = "";
+        // MESSAGING
+        function sendUserMsg() {
+            const msg = document.getElementById('u-msg').value;
+            const file = document.getElementById('msgFile').files[0];
+            const reader = new FileReader();
+            
+            const postMsg = (imgData = null) => {
+                rtdb.ref('messages').push({
+                    name: currentUser.displayName,
+                    uid: currentUser.uid,
+                    msg: msg,
+                    img: imgData,
+                    time: Date.now()
+                });
+                document.getElementById('u-msg').value = "";
+            };
+
+            if(file) {
+                reader.onload = (e) => postMsg(e.target.result);
+                reader.readAsDataURL(file);
+            } else {
+                postMsg();
+            }
         }
 
-        function submitBank() {
-            const b = document.getElementById('bank-name').value;
-            const a = document.getElementById('bank-acc').value;
-            rtdb.ref('withdraw_requests').push({ name: currentUser.displayName, bank: b, acc: a, amount: document.getElementById('balance').innerText });
-            alert("Bank Request Sent!");
-        }
-
-        // --- GLOBAL & ADMIN FUNCTIONS ---
-        function loadGlobalData() {
-            rtdb.ref('payout_proofs').limitToLast(5).on('value', snap => {
-                const box = document.getElementById('proof-box');
+        function loadUserChat() {
+            rtdb.ref('messages').on('value', snap => {
+                const box = document.getElementById('user-msg-box');
                 box.innerHTML = "";
                 snap.forEach(c => {
                     const d = c.val();
-                    box.innerHTML += `<div style="font-size:0.75rem; padding:8px 0; border-bottom:1px solid var(--border)">
-                        ${d.info} <span style="color:#10b981; float:right;">Rs. ${d.amt}</span>
-                    </div>`;
+                    if(d.uid === currentUser.uid) {
+                        box.innerHTML += `<div class="msg-item"><b>Me:</b> ${d.msg} ${d.img ? '<br><img class="msg-img" src="'+d.img+'">' : ''}</div>`;
+                    }
                 });
             });
         }
 
-        function addProof() {
-            const info = prompt("Bank & User (e.g. HNB - Kaveen)");
-            const amt = prompt("Amount?");
-            if(info && amt) rtdb.ref('payout_proofs').push({ info, amt });
+        // WITHDRAW
+        function submitWithdraw() {
+            const data = {
+                uid: currentUser.uid,
+                name: currentUser.displayName,
+                bank: document.getElementById('b-name').value,
+                acc: document.getElementById('b-acc').value,
+                holder: document.getElementById('b-holder').value,
+                branch: document.getElementById('b-branch').value,
+                amount: document.getElementById('balance').innerText,
+                status: 'pending'
+            };
+            rtdb.ref('withdraws').push(data);
+            document.getElementById('bank-msg').style.display = "block";
+            alert("Request Sent!");
         }
 
-        function loadAdminData() {
-            rtdb.ref('withdraw_requests').on('value', snap => {
-                const box = document.getElementById('admin-bank-list');
-                box.innerHTML = "";
-                snap.forEach(c => {
-                    box.innerHTML += `<div class="admin-item">${c.val().name} | ${c.val().bank} | ${c.val().acc} | Rs. ${c.val().amount}</div>`;
-                });
-            });
+        // ADMIN TAB LOGIC
+        function openAdminTab(id) {
+            document.querySelectorAll('.a-tab').forEach(t => t.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
 
-            rtdb.ref('support_msgs').on('value', snap => {
-                const box = document.getElementById('admin-msg-list');
-                box.innerHTML = "";
-                snap.forEach(c => {
-                    box.innerHTML += `<div class="admin-item"><b>${c.val().name}:</b> ${c.val().msg}</div>`;
-                });
+        // ADMIN DATA
+        rtdb.ref('withdraws').on('value', snap => {
+            const list = document.getElementById('admin-bank-list');
+            list.innerHTML = "";
+            snap.forEach(c => {
+                const d = c.val();
+                list.innerHTML += `<div class="glass-card" style="font-size:0.7rem">
+                    <b>${d.name}</b> - Rs.${d.amount}<br>
+                    ${d.bank} | ${d.acc} | ${d.holder}<br>
+                    <button onclick="rtdb.ref('withdraws/${c.key}').remove()" style="color:#10b981; background:none; border:none; cursor:pointer;">ACCEPT</button>
+                    <button onclick="rtdb.ref('withdraws/${c.key}').remove()" style="color:#ef4444; background:none; border:none; cursor:pointer;">REJECT</button>
+                </div>`;
             });
+        });
+
+        rtdb.ref('messages').on('value', snap => {
+            const list = document.getElementById('admin-msg-list');
+            list.innerHTML = "";
+            snap.forEach(c => {
+                const d = c.val();
+                list.innerHTML += `<div class="msg-item">
+                    <b>${d.name}:</b> ${d.msg}
+                    ${d.img ? '<br><img class="msg-img" src="'+d.img+'" onclick="window.open(this.src)">' : ''}
+                </div>`;
+            });
+        });
+
+        function addAdminProof() {
+            const info = document.getElementById('ap-info').value;
+            const amt = document.getElementById('ap-amt').value;
+            const file = document.getElementById('ap-img').files[0];
+            const reader = new FileReader();
+
+            const postProof = (img = null) => {
+                rtdb.ref('proofs').push({ info, amt, img });
+                alert("Proof Posted!");
+            };
+
+            if(file) {
+                reader.onload = (e) => postProof(e.target.result);
+                reader.readAsDataURL(file);
+            } else {
+                postProof();
+            }
         }
     </script>
 </body>
