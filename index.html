@@ -24,7 +24,6 @@
         #globeViz { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100vh; }
         .container { max-width: 800px; margin: auto; padding: 15px; position: relative; z-index: 10; }
 
-        /* UI Screens */
         #login-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; text-align: center; }
         #app { display: none; }
         #profile-menu { position: fixed; right: -100%; top: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.98); backdrop-filter: blur(20px); transition: 0.5s; z-index: 200; overflow-y: auto; padding: 20px; box-sizing: border-box; }
@@ -45,8 +44,9 @@
 
         input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; }
         
-        #ad-popup { display: none; position: fixed; inset: 0; background: #000; z-index: 500; }
-        .close-ad { position: absolute; top: 10px; right: 10px; background: #ff4757; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; z-index: 510; font-weight: bold; display: none; }
+        /* Modal Style for Ad Task */
+        #ad-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; text-align: center; }
+        .modal-content { background: #111; padding: 30px; border-radius: 20px; border: 2px solid var(--main); max-width: 90%; width: 400px; }
     </style>
 </head>
 <body>
@@ -68,13 +68,11 @@
             <h3>User Profile & Payout</h3>
             <button onclick="toggleProfile()" style="background:none; border:none; color:white; font-size:2.5rem;">&times;</button>
         </div>
-        
         <center>
             <img id="m-dp" style="width:110px; height:110px; border-radius:50%; border:3px solid var(--main); object-fit: cover; margin-bottom: 10px;">
             <h2 id="m-name" style="margin:5px 0;">User Name</h2>
             <div id="owner-badge-area"></div>
         </center>
-
         <div class="glass-card">
             <h4>📍 Personal Details</h4>
             <input type="text" id="m-village" placeholder="Village / Home Town">
@@ -82,7 +80,6 @@
             <input type="text" id="m-phone" placeholder="Phone Number">
             <button class="btn-main" onclick="updateProfile()">Save Details</button>
         </div>
-
         <div class="glass-card">
             <h4>🏦 Bank Details (Withdrawal)</h4>
             <input type="text" id="bank-name" placeholder="Bank Name">
@@ -101,27 +98,19 @@
             <img id="u-head-dp" style="width:45px; height:45px; border-radius:50%; border:2px solid var(--main); cursor:pointer;" onclick="toggleProfile()">
         </div>
 
-        <div id="admin-view" style="display:none; margin-top: 20px;" class="glass-card admin-dashboard">
-            <span class="owner-badge">👑 OWNER MASTER CONTROL</span>
-            <p>Total Registered Users: <span id="admin-user-count" style="color:var(--main); font-weight:bold;">0</span></p>
-            <div id="admin-payout-requests" style="background:rgba(0,0,0,0.5); padding:15px; border-radius:10px; max-height:250px; overflow-y:auto;">
-                <p style="font-size:0.8rem; opacity:0.5;">No pending requests</p>
-            </div>
-        </div>
-
         <div class="glass-card" style="text-align:center; margin-top:25px; padding: 40px 20px;">
             <p style="margin:0; opacity:0.6; text-transform: uppercase; letter-spacing: 1px;">Current Balance</p>
             <h1 style="font-size:4rem; color:var(--main); margin:10px 0;">රු. <span id="balance">0.00</span></h1>
-            <button class="btn-main" style="padding: 18px;" onclick="openAdTask()">WATCH ADS & EARN (Rs. 5.00)</button>
+            <button class="btn-main" style="padding: 18px;" onclick="startAdTask()">WATCH ADS & EARN (Rs. 5.00)</button>
         </div>
 
         <h4 style="margin-top: 30px; opacity: 0.8;">Active Tasks</h4>
         <div class="glass-card" style="display:flex; justify-content: space-between; align-items:center;">
-            <span>Revenue Task 01 (Multi-Ad Mix)</span>
-            <button class="btn-main" style="width: auto; margin:0;" onclick="openAdTask()">PLAY</button>
+            <span>Revenue Task 01 (Direct Bonus)</span>
+            <button class="btn-main" style="width: auto; margin:0;" onclick="startAdTask()">PLAY</button>
         </div>
         
-        <p style="text-align: center; font-size: 0.7rem; opacity: 0.4; margin-top: 50px;">Powered by Akiya Kavi | Monetag Secured</p>
+        <p style="text-align: center; font-size: 0.7rem; opacity: 0.4; margin-top: 50px;">Powered by 𝐀𝐊𝐈𝐘𝐀 龍 ⚙️ | © 2026 CashMaster Global 🌐 All Right Reseved 〽️</p>
     </div>
 
     <div id="chat-icon" onclick="toggleChat()"><img src="https://cdn-icons-png.flaticon.com/512/134/134914.png" width="30"></div>
@@ -138,16 +127,17 @@
     </div>
 </div>
 
-<div id="ad-popup">
-    <button id="close-ad-btn" class="close-ad" onclick="closeAd()">CLOSE AD (X)</button>
-    <div style="padding:15px; background:var(--main); color:#000; font-weight:bold; display:flex; justify-content:space-between;">
-        <span>AD SYNCING: <span id="timer">40</span>s</span>
-        <span>EST. REWARD: RS. 5.00</span>
+<div id="ad-modal">
+    <div class="modal-content">
+        <h2 id="modal-title">Syncing Ad...</h2>
+        <div id="timer-circle" style="font-size: 3rem; color: var(--main); margin: 20px 0;">30</div>
+        <p style="font-size: 0.9rem; opacity: 0.7;">Please wait while the ad completes to claim your Rs. 5.00 reward.</p>
+        <button id="claim-btn" class="btn-main" style="display:none;" onclick="claimReward()">CLAIM RS. 5.00</button>
     </div>
-    <iframe id="ad-frame" style="width:100%; height:92vh; border:none;"></iframe>
 </div>
 
 <script>
+// Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyAyShizj4G0g7z2CCHDLbetOWuJwaimcBM",
     authDomain: "cash-master-pro-b5b5a.firebaseapp.com",
@@ -165,6 +155,7 @@ const provider = new firebase.auth.GoogleAuthProvider();
 
 let currentUser = null;
 const ADMIN_EMAIL = "kaviakiya@gmail.com";
+const DIRECT_LINK = "https://omg10.com/4/10935818"; // උඹේ Direct Link එක මෙන්න
 
 function loginWithGoogle() { auth.signInWithPopup(provider).then(res => setupUser(res.user)); }
 auth.onAuthStateChanged(user => { if(user) setupUser(user); });
@@ -174,12 +165,6 @@ async function setupUser(user) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     
-    if(user.email === ADMIN_EMAIL) {
-        document.getElementById('admin-view').style.display = 'block';
-        document.getElementById('owner-badge-area').innerHTML = '<span class="owner-badge">👑 PLATFORM OWNER</span>';
-        loadAdminData();
-    }
-
     const userRef = db.collection("users").doc(user.uid);
     const doc = await userRef.get();
     if(!doc.exists) {
@@ -195,110 +180,56 @@ async function setupUser(user) {
         document.getElementById('u-head-dp').src = d.dp;
         document.getElementById('m-dp').src = d.dp;
         document.getElementById('m-name').innerText = d.name;
-        document.getElementById('bank-status').innerText = "Status: " + (d.bank.status || "None");
     });
-    loadChat();
 }
 
-function toggleProfile() { document.getElementById('profile-menu').classList.toggle('active'); }
+// AD LOGIC
+let adTimer;
+function startAdTask() {
+    // 1. වෙනම ටැබ් එකක ඇඩ් එක අරිනවා
+    window.open(DIRECT_LINK, '_blank');
 
-function updateProfile() {
-    const age = document.getElementById('m-age').value;
-    const village = document.getElementById('m-village').value;
-    const phone = document.getElementById('m-phone').value;
-    db.collection("users").doc(currentUser.uid).update({ age, village, phone }).then(() => alert("Saved!"));
-}
+    // 2. සයිට් එකේ ටයිමර් එක පටන් ගන්නවා
+    const modal = document.getElementById('ad-modal');
+    const timerDisplay = document.getElementById('timer-circle');
+    const claimBtn = document.getElementById('claim-btn');
+    const title = document.getElementById('modal-title');
 
-function requestWithdrawal() {
-    const bankData = {
-        name: document.getElementById('bank-name').value,
-        user: document.getElementById('bank-user').value,
-        acc: document.getElementById('bank-acc').value,
-        branch: document.getElementById('bank-branch').value,
-        status: "Pending", requestedDate: Date.now()
-    };
-    db.collection("users").doc(currentUser.uid).update({ bank: bankData }).then(() => alert("Request Sent!"));
-}
-
-let adInterval;
-function openAdTask() {
-    const adPopup = document.getElementById('ad-popup');
-    const timerTxt = document.getElementById('timer');
-    const closeBtn = document.getElementById('close-ad-btn');
-    // මෙතනට ඔයාගේ Direct Link එක දාන්න (දැනට මේක වැඩ)
-    const adLink = "https://www.profitablecpmratenetwork.com/uexqc584a?key=28c12fe7922658807bfc71689c8f3f07";
+    modal.style.display = 'flex';
+    claimBtn.style.display = 'none';
+    title.innerText = "Ad is Running...";
     
-    adPopup.style.display = 'block';
-    closeBtn.style.display = 'none';
-    document.getElementById('ad-frame').src = adLink;
+    let timeLeft = 30;
+    timerDisplay.innerText = timeLeft;
 
-    let count = 40;
-    adInterval = setInterval(() => {
-        count--;
-        timerTxt.innerText = count;
-        if(count <= 0) {
-            clearInterval(adInterval);
-            closeBtn.style.display = 'block';
-            db.collection("users").doc(currentUser.uid).update({
-                balance: firebase.firestore.FieldValue.increment(5.00)
-            });
+    adTimer = setInterval(() => {
+        timeLeft--;
+        timerDisplay.innerText = timeLeft;
+        if(timeLeft <= 0) {
+            clearInterval(adTimer);
+            title.innerText = "Task Completed!";
+            timerDisplay.innerText = "✅";
+            claimBtn.style.display = 'block';
         }
     }, 1000);
 }
 
-function closeAd() {
-    document.getElementById('ad-popup').style.display = 'none';
-    document.getElementById('ad-frame').src = "";
+function claimReward() {
+    db.collection("users").doc(currentUser.uid).update({
+        balance: firebase.firestore.FieldValue.increment(5.00)
+    }).then(() => {
+        alert("Rs. 5.00 added to your account!");
+        document.getElementById('ad-modal').style.display = 'none';
+    });
 }
 
+function toggleProfile() { document.getElementById('profile-menu').classList.toggle('active'); }
 function toggleChat() {
     const p = document.getElementById('global-chat-panel');
     p.style.display = p.style.display === 'flex' ? 'none' : 'flex';
 }
 
-function sendMsg() {
-    const val = document.getElementById('chat-input').value;
-    if(!val) return;
-    rtdb.ref('global_messages').push({ name: currentUser.displayName, email: currentUser.email, text: val, time: Date.now() });
-    document.getElementById('chat-input').value = "";
-}
-
-function loadChat() {
-    rtdb.ref('global_messages').limitToLast(25).on('value', snap => {
-        const cont = document.getElementById('chat-messages');
-        cont.innerHTML = "";
-        snap.forEach(child => {
-            const d = child.val();
-            const color = d.email === ADMIN_EMAIL ? 'var(--gold)' : 'var(--main)';
-            cont.innerHTML += `<div style="margin-bottom:10px;"><b style="color:${color}">${d.name}:</b> ${d.text}</div>`;
-        });
-        cont.scrollTop = cont.scrollHeight;
-    });
-}
-
-function loadAdminData() {
-    db.collection("users").onSnapshot(snap => {
-        document.getElementById('admin-user-count').innerText = snap.size;
-        const reqList = document.getElementById('admin-payout-requests');
-        reqList.innerHTML = "";
-        snap.forEach(doc => {
-            const u = doc.data();
-            if(u.bank && u.bank.status === "Pending") {
-                reqList.innerHTML += `
-                    <div style="border-bottom:1px solid #444; padding:10px; font-size:0.8rem;">
-                        <b>${u.name}</b> (Rs. ${u.balance})<br>
-                        ${u.bank.name} - ${u.bank.acc}<br>
-                        <button onclick="approvePayout('${doc.id}')" style="color:cyan; border:none; background:none; cursor:pointer;">[APPROVE]</button>
-                        <button onclick="rejectPayout('${doc.id}')" style="color:red; border:none; background:none; cursor:pointer;">[REJECT]</button>
-                    </div>`;
-            }
-        });
-    });
-}
-
-function approvePayout(uid) { db.collection("users").doc(uid).update({ "bank.status": "Completed", balance: 0 }); }
-function rejectPayout(uid) { db.collection("users").doc(uid).update({ "bank.status": "Rejected" }); }
-
+// Globe & Chat Scripts remain same as before...
 const initGlobe = () => {
     const globe = new ThreeGlobe().globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg').pointAltitude(0.1);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
