@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CashMaster PRO | Business Edition</title>
+    <title>Work Global | Premium Business Hub</title>
     
     <meta name="monetag" content="27213a6f8a8ce2199a7ac816d20f9984">
     <script src="https://quge5.com/88/tag.min.js" data-zone="234281" async data-cfasync="false"></script>
-
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -19,110 +18,113 @@
     <style>
         :root { --main: #00d2ff; --bg: #020617; --gold: #ffd700; --glass: rgba(255, 255, 255, 0.05); --red: #ff4757; --green: #2ecc71; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
-        #globeViz { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100vh; }
-        .container { max-width: 900px; margin: auto; padding: 15px; position: relative; z-index: 10; }
-        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin-bottom: 15px; transition: 0.3s; }
-        .btn-main { background: var(--main); color: #000; border: none; padding: 12px 25px; border-radius: 12px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; }
-        .btn-gold { background: var(--gold); color: black; }
-        .business-ad { width: 100%; border-radius: 15px; border: 1px solid var(--gold); cursor: pointer; margin: 10px 0; display: none; }
-        #admin-panel { display: none; background: rgba(0,0,0,0.95); border: 2px solid var(--gold); padding: 20px; border-radius: 20px; margin-top: 20px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; }
-        #ad-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
-        .modal-content { background: #111; padding: 30px; border-radius: 20px; border: 2px solid var(--main); text-align: center; }
-        .task-img { width: 100%; border-radius: 15px; margin: 10px 0; border: 1px solid #444; }
-        .ref-box { background: #000; padding: 10px; border-radius: 10px; font-size: 0.8rem; border: 1px dashed var(--main); margin: 10px 0; word-break: break-all; }
-        .bank-locked { opacity: 0.4; pointer-events: none; }
+        #globeViz { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100vh; opacity: 0.5; }
+        
+        .container { max-width: 500px; margin: auto; padding: 15px; position: relative; z-index: 10; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 25px; margin-bottom: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        
+        .btn-main { background: linear-gradient(90deg, #00d2ff, #3a7bd5); color: #000; border: none; padding: 14px; border-radius: 14px; font-weight: 700; cursor: pointer; width: 100%; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-main:hover { transform: scale(1.02); filter: brightness(1.2); }
+        
+        .btn-gold { background: linear-gradient(90deg, #ffd700, #b8860b); color: black; }
+        .admin-only { display: none; border: 2px solid var(--gold) !important; background: rgba(255, 215, 0, 0.05) !important; }
+        
+        input, select { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: #fff; box-sizing: border-box; }
+        .reward-badge { background: var(--green); color: black; padding: 4px 10px; border-radius: 8px; font-weight: bold; font-size: 12px; }
+        
+        .nav-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
+        .logo { font-weight: 800; font-size: 1.2rem; letter-spacing: 1px; }
+        .logo span { color: var(--main); }
+
+        #ad-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; }
+        .timer-circle { width: 100px; height: 100px; border: 5px solid var(--main); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; margin: 20px auto; }
     </style>
 </head>
 <body>
 
 <div id="globeViz"></div>
 
-<div id="login-screen" style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-    <h1 style="letter-spacing: 2px;">CASHMASTER <span style="color:var(--main)">PRO</span></h1>
-    <button class="btn-main" style="width:auto;" onclick="loginWithGoogle()">Sign in with Google</button>
+<div id="login-screen" style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align: center;">
+    <img src="cashmasterlogo.jpg" style="width: 120px; border-radius: 30px; margin-bottom: 20px; box-shadow: 0 0 30px var(--main);">
+    <h1 class="logo">WORKGLOBAL <span>PRO</span></h1>
+    <p style="opacity: 0.6; margin-bottom: 30px;">The World's Most Secure Work Hub</p>
+    <button class="btn-main" style="width:auto; padding: 15px 40px;" onclick="loginWithGoogle()">🚀 START EARNING NOW</button>
 </div>
 
 <div id="app" style="display:none;">
     <div class="container">
         
-        <a id="biz-ad-link" href="#" target="_blank">
-            <img id="biz-ad-img" class="business-ad" src="" alt="Sponsored Ad">
-        </a>
-
-        <div style="display:flex; justify-content: space-between; align-items: center; margin:20px 0;">
-            <h3>CASHMASTER <span style="color:var(--main)">PRO</span></h3>
-            <div id="top-balance" style="color:var(--gold); font-weight:bold;">Rs. 0.00</div>
+        <div class="nav-header">
+            <div class="logo">WORK<span>GLOBAL</span></div>
+            <div id="top-balance" style="background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 50px; font-weight: bold; color: var(--gold);">Rs. 0.00</div>
         </div>
 
-        <div id="admin-panel">
-            <h3 style="color:var(--gold)">👑 OWNER MASTER CONTROL</h3>
-            <div class="glass-card">
-                <h4>🎯 CREATE AI/IMAGE TASK (10% TO USER)</h4>
-                <input type="text" id="adm-task-img" placeholder="Image URL for Task">
-                <input type="text" id="adm-task-opts" placeholder="Options (e.g. Car, Van, Bus)">
-                <input type="number" id="adm-task-rev" placeholder="Total You Earn (e.g. 50)">
-                <button class="btn-main" onclick="publishAITask()">PUBLISH TASK</button>
-            </div>
-            <div class="glass-card">
-                <h4>📢 SET BUSINESS AD</h4>
-                <input type="text" id="adm-ad-img" placeholder="Ad Image URL">
-                <input type="text" id="adm-ad-url" placeholder="Ad Link">
-                <button class="btn-main" onclick="saveBusinessAd()">UPDATE AD</button>
-            </div>
-            <h4>Pending Withdrawals</h4>
-            <div id="payout-list"></div>
-        </div>
-
-        <div class="glass-card" style="text-align:center;">
-            <p style="opacity:0.6;">CURRENT BALANCE</p>
-            <h1 style="font-size:3rem; color:var(--main); margin:5px 0;">රු. <span id="balance">0.00</span></h1>
+        <div id="admin-panel" class="glass-card admin-only">
+            <h3 style="color:var(--gold); margin-top:0;">👑 MASTER CONTROL</h3>
             
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <button class="btn-main" onclick="startAdTask()">WATCH AD (0.50)</button>
-                <button class="btn-main btn-gold" onclick="claimDailyBonus()">DAILY BONUS (10/=)</button>
+            <div style="border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 15px;">
+                <h4 style="margin: 0 0 10px 0;">🎫 CREATE REDEEM CODE</h4>
+                <input type="text" id="adm-code-val" placeholder="8 Character Code (e.g. WORK99X)" maxlength="8">
+                <input type="number" id="adm-code-amt" placeholder="Reward Amount (Rs.)">
+                <button class="btn-main btn-gold" onclick="generateRedeemCode()">SAVE CODE</button>
+            </div>
+
+            <div>
+                <h4 style="margin: 0 0 10px 0;">🎯 NEW AI TASK</h4>
+                <input type="text" id="adm-task-img" placeholder="Task Image URL">
+                <input type="text" id="adm-task-opts" placeholder="Answers (comma separated)">
+                <input type="number" id="adm-task-rev" placeholder="Your Total Revenue (e.g. 100)">
+                <p style="font-size: 11px; color: var(--main);">* User will automatically get 10% of total revenue.</p>
+                <button class="btn-main" onclick="publishAITask()">PUBLISH TO USERS</button>
             </div>
         </div>
 
-        <div class="glass-card" id="task-section">
-            <h4 style="color:var(--main)">🖼️ AI DATA TASKS (EARN 10%)</h4>
-            <div id="task-display-area">
-                <p style="font-size:0.8rem; opacity:0.5;">Looking for new tasks...</p>
+        <div class="glass-card" style="text-align:center; background: linear-gradient(180deg, rgba(0,210,255,0.1) 0%, rgba(255,255,255,0.05) 100%);">
+            <p style="font-size: 0.8rem; letter-spacing: 2px; opacity: 0.7;">AVAILABLE BALANCE</p>
+            <h1 style="font-size:3.5rem; margin: 10px 0;">රු. <span id="balance">0.00</span></h1>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <button class="btn-main" onclick="startAdTask()">📺 WATCH AD (0.50)</button>
+                <button class="btn-main btn-gold" onclick="claimDailyBonus()">🎁 DAILY (10/=)</button>
             </div>
         </div>
 
         <div class="glass-card">
-            <h4>👥 REFER & EARN</h4>
-            <div class="ref-box" id="ref-link">Generating link...</div>
-            <button class="btn-main" style="padding:5px; font-size:0.7rem;" onclick="copyRef()">COPY LINK</button>
+            <h4>🎟️ REDEEM PROMO CODE</h4>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="user-promo-input" placeholder="Enter 8-char code" style="margin:0;">
+                <button class="btn-main" style="width:120px; margin:0;" onclick="redeemCode()">APPLY</button>
+            </div>
+        </div>
+
+        <div id="task-section">
+            <h4 style="margin-left: 10px;">🔥 ACTIVE GLOBAL TASKS</h4>
+            <div id="task-display-area"></div>
         </div>
 
         <div class="glass-card">
             <h4>🏦 WITHDRAWAL</h4>
-            <div id="bank-form" class="bank-locked">
-                <select id="wd-amount">
-                    <option value="2000">Rs. 2000.00</option>
-                    <option value="5000">Rs. 5000.00</option>
-                </select>
-                <input type="text" id="bank-acc" placeholder="Account Number">
-                <input type="text" id="bank-holder" placeholder="Holder Name">
-                <button class="btn-main" style="background:var(--gold)" onclick="submitWithdraw()">REQUEST PAYOUT</button>
+            <div id="bank-form" class="bank-locked" style="opacity: 0.5;">
+                <input type="text" id="bank-acc" placeholder="Bank / Account Number">
+                <button class="btn-main btn-gold" onclick="submitWithdraw()">REQUEST PAYOUT</button>
             </div>
-            <p id="lock-msg" style="color:var(--red); font-size:0.7rem;">Requirement: Rs. 2000 & 21 Days Active.</p>
+            <p id="lock-msg" style="color:var(--red); font-size:0.7rem; text-align:center; margin-top:10px;">Min: Rs. 2000 & 21 Days Active.</p>
         </div>
 
     </div>
 </div>
 
 <div id="ad-modal">
-    <div class="modal-content">
-        <h2 id="timer-box">30</h2>
-        <p>Stay on this page to earn reward...</p>
-        <button id="claim-reward-btn" class="btn-main" style="display:none;" onclick="finalizeReward()">CLAIM REWARD</button>
+    <div style="text-align:center;">
+        <div class="timer-circle" id="timer-box">30</div>
+        <h3>Verifying Task...</h3>
+        <p style="opacity:0.6;">Keep this screen open to secure reward.</p>
+        <button id="claim-reward-btn" class="btn-main" style="display:none;" onclick="finalizeReward()">✅ CLAIM NOW</button>
     </div>
 </div>
 
 <script>
+// --- CONFIGURATION ---
 const firebaseConfig = {
     apiKey: "AIzaSyAyShizj4G0g7z2CCHDLbetOWuJwaimcBM",
     authDomain: "cash-master-pro-b5b5a.firebaseapp.com",
@@ -135,10 +137,11 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-let currentUser = null;
 const ADMIN_EMAIL = "kaviakiya@gmail.com";
 const MONETAG_DIRECT = "https://omg10.com/4/10935818";
+let currentUser = null;
 
+// --- AUTH ---
 function loginWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider).then(res => setupUser(res.user));
@@ -150,27 +153,15 @@ async function setupUser(user) {
     currentUser = user;
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
-    document.getElementById('ref-link').innerText = window.location.origin + "?ref=" + user.uid;
 
     if(user.email === ADMIN_EMAIL) {
-        document.getElementById('admin-panel').style.display = 'block';
-        loadAdminData();
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
     }
-
-    // Load Settings
-    db.collection("settings").doc("ads").onSnapshot(doc => {
-        if(doc.exists) {
-            const data = doc.data();
-            document.getElementById('biz-ad-img').src = data.img;
-            document.getElementById('biz-ad-link').href = data.url;
-            document.getElementById('biz-ad-img').style.display = 'block';
-        }
-    });
 
     const userRef = db.collection("users").doc(user.uid);
     const snap = await userRef.get();
     if(!snap.exists) {
-        await userRef.set({ name: user.displayName, balance: 0, joined: Date.now(), lastBonus: 0 });
+        await userRef.set({ name: user.displayName, balance: 0, joined: Date.now(), lastBonus: 0, usedCodes: [] });
     }
 
     userRef.onSnapshot(s => {
@@ -180,7 +171,8 @@ async function setupUser(user) {
         
         const days = (Date.now() - d.joined) / (1000*60*60*24);
         if(d.balance >= 2000 && days >= 21) {
-            document.getElementById('bank-form').classList.remove('bank-locked');
+            document.getElementById('bank-form').style.opacity = "1";
+            document.getElementById('bank-form').style.pointerEvents = "auto";
             document.getElementById('lock-msg').innerText = "✅ Withdrawal Unlocked";
             document.getElementById('lock-msg').style.color = "var(--green)";
         }
@@ -189,48 +181,78 @@ async function setupUser(user) {
     loadActiveTasks();
 }
 
-// --- Task System ---
+// --- ADMIN LOGIC ---
+function generateRedeemCode() {
+    const code = document.getElementById('adm-code-val').value.toUpperCase();
+    const amt = parseFloat(document.getElementById('adm-code-amt').value);
+    
+    if(code.length !== 8) return alert("Code must be 8 characters!");
+
+    db.collection("promo_codes").doc(code).set({
+        reward: amt,
+        createdAt: Date.now()
+    }).then(() => alert("Code " + code + " Saved Successfully!"));
+}
 
 function publishAITask() {
     const img = document.getElementById('adm-task-img').value;
     const opts = document.getElementById('adm-task-opts').value.split(',');
-    const rev = parseFloat(document.getElementById('adm-task-rev').value);
-    const userPay = rev * 0.10; // 🛑 10% Logic
+    const totalRev = parseFloat(document.getElementById('adm-task-rev').value);
+    const userPay = totalRev * 0.10; // 🛑 User gets 10%
 
-    db.collection("tasks").add({
+    db.collection("global_tasks").add({
         img, options: opts, pay: userPay, status: "active", createdAt: Date.now()
-    }).then(() => {
-        alert("Task Published! User earns: Rs. " + userPay);
-    });
+    }).then(() => alert("Task Live! You keep 90%, User gets Rs. " + userPay));
+}
+
+// --- USER LOGIC ---
+async function redeemCode() {
+    const codeInput = document.getElementById('user-promo-input').value.toUpperCase();
+    const userRef = db.collection("users").doc(currentUser.uid);
+    const userData = (await userRef.get()).data();
+
+    if(userData.usedCodes && userData.usedCodes.includes(codeInput)) {
+        return alert("You already used this code!");
+    }
+
+    const codeSnap = await db.collection("promo_codes").doc(codeInput).get();
+    if(codeSnap.exists) {
+        const reward = codeSnap.data().reward;
+        await userRef.update({
+            balance: firebase.firestore.FieldValue.increment(reward),
+            usedCodes: firebase.firestore.FieldValue.arrayUnion(codeInput)
+        });
+        alert("🎉 Congrats! Rs. " + reward + " added to your wallet.");
+    } else {
+        alert("Invalid or Expired Code!");
+    }
 }
 
 function loadActiveTasks() {
-    db.collection("tasks").where("status", "==", "active").limit(3).onSnapshot(snap => {
+    db.collection("global_tasks").where("status", "==", "active").limit(5).onSnapshot(snap => {
         const area = document.getElementById('task-display-area');
-        if(snap.empty) { area.innerHTML = "No tasks. Check back later!"; return; }
         area.innerHTML = "";
         snap.forEach(doc => {
             const t = doc.data();
-            let buttons = t.options.map(o => `<button class="btn-main" style="width:auto; margin:5px; padding:8px;" onclick="completeAITask('${doc.id}', ${t.pay})">${o}</button>`).join('');
+            let buttons = t.options.map(o => `<button class="btn-main" style="width:auto; margin:5px; padding:8px 15px; font-size:12px;" onclick="completeTask('${doc.id}', ${t.pay})">${o}</button>`).join('');
             area.innerHTML += `
-                <div style="border-top: 1px solid #333; padding-top:10px; margin-top:10px;">
-                    <img src="${t.img}" class="task-img">
-                    <p style="font-size:0.8rem;">Pick the correct answer to earn <b>Rs. ${t.pay.toFixed(2)}</b></p>
-                    ${buttons}
+                <div class="glass-card">
+                    <img src="${t.img}" style="width:100%; border-radius:15px; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:13px; opacity:0.7;">Identify the image</span>
+                        <span class="reward-badge">Rs. ${t.pay.toFixed(2)}</span>
+                    </div>
+                    <div style="margin-top:10px;">${buttons}</div>
                 </div>`;
         });
     });
 }
 
-function completeAITask(taskId, pay) {
-    db.collection("users").doc(currentUser.uid).update({
-        balance: firebase.firestore.FieldValue.increment(pay)
-    }).then(() => {
-        alert("Success! Rs." + pay.toFixed(2) + " added.");
-    });
+function completeTask(tid, pay) {
+    db.collection("users").doc(currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(pay) });
+    alert("Task Success! Rs. " + pay.toFixed(2) + " earned.");
 }
 
-// --- Existing Monetag/Bonus ---
 function startAdTask() {
     window.open(MONETAG_DIRECT, '_blank');
     document.getElementById('ad-modal').style.display = 'flex';
@@ -255,45 +277,8 @@ function claimDailyBonus() {
         if(Date.now() - last > 86400000) {
             userRef.update({ balance: firebase.firestore.FieldValue.increment(10), lastBonus: Date.now() });
             alert("Daily Bonus Claimed!");
-        } else { alert("Come back tomorrow!"); }
+        } else { alert("Try again in 24 hours!"); }
     });
-}
-
-function saveBusinessAd() {
-    const img = document.getElementById('adm-ad-img').value;
-    const url = document.getElementById('adm-ad-url').value;
-    db.collection("settings").doc("ads").set({ img, url }).then(() => alert("Ad Updated!"));
-}
-
-function loadAdminData() {
-    db.collection("withdrawals").where("status", "==", "Pending").onSnapshot(snap => {
-        const list = document.getElementById('payout-list');
-        list.innerHTML = "";
-        snap.forEach(doc => {
-            const w = doc.data();
-            list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #333;">
-                <span>${w.name} (Rs. ${w.amount})</span>
-                <button onclick="approvePay('${doc.id}', '${w.uid}', ${w.amount})">PAID</button>
-            </div>`;
-        });
-    });
-}
-
-function approvePay(docId, uid, amt) {
-    db.collection("withdrawals").doc(docId).update({ status: "Paid" });
-    db.collection("users").doc(uid).update({ balance: firebase.firestore.FieldValue.increment(-amt) });
-    alert("Paid!");
-}
-
-function submitWithdraw() {
-    const amt = parseFloat(document.getElementById('wd-amount').value);
-    db.collection("withdrawals").add({ uid: currentUser.uid, name: currentUser.displayName, amount: amt, status: "Pending", time: Date.now() });
-    alert("Request Sent!");
-}
-
-function copyRef() {
-    navigator.clipboard.writeText(document.getElementById('ref-link').innerText);
-    alert("Copied!");
 }
 
 // Background Globe
