@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CashMaster PRO | Official</title>
     
+    <meta name="monetag" content="27213a6f8a8ce2199a7ac816d20f9984">
+
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -21,36 +23,30 @@
         #globeViz { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100vh; }
         .container { max-width: 800px; margin: auto; padding: 15px; position: relative; z-index: 10; }
 
-        /* Login Screen */
+        /* UI Screens */
         #login-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; text-align: center; }
-        
-        /* Profile Overlay */
+        #app { display: none; }
         #profile-menu { position: fixed; right: -100%; top: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.98); backdrop-filter: blur(20px); transition: 0.5s; z-index: 200; overflow-y: auto; padding: 20px; box-sizing: border-box; }
         #profile-menu.active { right: 0; }
 
-        /* Glass Cards */
-        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin-bottom: 15px; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin-bottom: 15px; transition: 0.3s; }
+        .glass-card:hover { border-color: var(--main); }
         
-        /* Admin Dashboard Special Style */
         .admin-dashboard { border: 2px solid var(--gold); background: rgba(20, 20, 0, 0.9); }
         .owner-badge { color: var(--gold); font-weight: bold; text-shadow: 0 0 10px var(--gold); font-size: 1.2rem; }
 
-        /* Buttons */
         .btn-main { background: var(--main); color: #000; border: none; padding: 12px 25px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 10px; }
-        .btn-google { background: #fff; color: #444; border: none; padding: 12px 25px; border-radius: 50px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-        
-        /* Chat UI */
+        .btn-main:active { transform: scale(0.98); }
+        .btn-google { background: #fff; color: #444; border: none; padding: 12px 25px; border-radius: 50px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+
+        /* Chat & Ad Popup */
         #chat-icon { position: fixed; bottom: 20px; right: 20px; background: var(--main); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 150; box-shadow: 0 5px 20px rgba(0,210,255,0.4); }
         #global-chat-panel { position: fixed; bottom: 90px; right: 20px; width: 320px; height: 450px; background: rgba(10,10,25,0.95); border: 1px solid var(--main); border-radius: 15px; display: none; flex-direction: column; z-index: 150; overflow: hidden; }
 
-        /* Form Controls */
-        input, select { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; }
         
-        .rules-list { font-size: 0.85rem; color: #ccc; line-height: 1.6; }
-        .rules-list b { color: var(--main); }
-
         #ad-popup { display: none; position: fixed; inset: 0; background: #000; z-index: 500; }
-        .close-ad { position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; z-index: 510; }
+        .close-ad { position: absolute; top: 10px; right: 10px; background: #ff4757; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; z-index: 510; font-weight: bold; display: none; }
     </style>
 </head>
 <body>
@@ -59,22 +55,23 @@
 
 <div id="login-screen">
     <img src="cashmasterlogo.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2111/2111415.png'" width="120">
-    <h1 style="margin-top: 20px;">CASHMASTER <span style="color:var(--main)">PRO</span></h1>
+    <h1 style="margin-top: 20px; letter-spacing: 2px;">CASHMASTER <span style="color:var(--main)">PRO</span></h1>
+    <p style="opacity: 0.6; margin-bottom: 30px;">Earn Money by Watching Premium Ads</p>
     <button class="btn-google" onclick="loginWithGoogle()">
         <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20"> Sign in with Google
     </button>
 </div>
 
-<div id="app" style="display:none;">
+<div id="app">
     <div id="profile-menu">
         <div style="display:flex; justify-content: space-between; align-items:center;">
             <h3>User Profile & Payout</h3>
-            <button onclick="toggleProfile()" style="background:none; border:none; color:white; font-size:2rem;">&times;</button>
+            <button onclick="toggleProfile()" style="background:none; border:none; color:white; font-size:2.5rem;">&times;</button>
         </div>
         
         <center>
-            <img id="m-dp" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--main); object-fit: cover;">
-            <h2 id="m-name">User Name</h2>
+            <img id="m-dp" style="width:110px; height:110px; border-radius:50%; border:3px solid var(--main); object-fit: cover; margin-bottom: 10px;">
+            <h2 id="m-name" style="margin:5px 0;">User Name</h2>
             <div id="owner-badge-area"></div>
         </center>
 
@@ -92,76 +89,70 @@
             <input type="text" id="bank-user" placeholder="Account Holder's Name">
             <input type="text" id="bank-acc" placeholder="Account Number">
             <input type="text" id="bank-branch" placeholder="Branch">
-            <p id="bank-status" style="font-size:0.8rem; color:orange;">Status: No Request</p>
+            <p id="bank-status" style="font-size:0.9rem; color:orange; font-weight: bold;">Status: No Request</p>
             <button class="btn-main" style="background:var(--gold);" onclick="requestWithdrawal()">Submit Payout Request</button>
-        </div>
-
-        <div class="glass-card">
-            <h4>📋 Platform Rules</h4>
-            <div class="rules-list">
-                <li><b>Minimum Payout:</b> ඔබට මුදල් ලබාගත හැක්කේ රු. 5000.00 සම්පූර්ණ වූ පසුව පමණි.</li>
-                <li><b>Task Rules:</b> එක් දැන්වීමක් තත්පර 40ක් නැරඹීම අනිවාර්ය වේ.</li>
-                <li><b>Account Age:</b> ගිණුම දින 21ක් පැරණි විය යුතුය.</li>
-                <li><b>VPN:</b> VPN භාවිතා කළ හැක, නමුත් වංචා කළහොත් Ban කරනු ලැබේ.</li>
-                <li><b>Earnings:</b> එක Ad එකකට රු. 5.00 බැගින් එකතු වේ.</li>
-            </div>
         </div>
     </div>
 
     <div class="container">
         <div style="display:flex; justify-content: space-between; align-items: center; margin-top:20px;">
-            <img src="cashmasterlogo.png" width="40" height="40">
-            <h2 style="margin:0;">CASHMASTER <span style="color:var(--main)">PRO</span></h2>
-            <img id="u-head-dp" src="" style="width:40px; height:40px; border-radius:50%; cursor:pointer;" onclick="toggleProfile()">
+            <img src="cashmasterlogo.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2111/2111415.png'" width="45" height="45">
+            <h2 style="margin:0; font-weight: 600;">CASHMASTER <span style="color:var(--main)">PRO</span></h2>
+            <img id="u-head-dp" style="width:45px; height:45px; border-radius:50%; border:2px solid var(--main); cursor:pointer;" onclick="toggleProfile()">
         </div>
 
-        <div id="admin-view" style="display:none;" class="glass-card admin-dashboard">
+        <div id="admin-view" style="display:none; margin-top: 20px;" class="glass-card admin-dashboard">
             <span class="owner-badge">👑 OWNER MASTER CONTROL</span>
-            <p>Total Registered Users: <span id="admin-user-count">0</span></p>
-            <div id="admin-payout-requests" style="background:#000; padding:10px; max-height:200px; overflow-y:auto;">
-                </div>
+            <p>Total Registered Users: <span id="admin-user-count" style="color:var(--main); font-weight:bold;">0</span></p>
+            <div id="admin-payout-requests" style="background:rgba(0,0,0,0.5); padding:15px; border-radius:10px; max-height:250px; overflow-y:auto;">
+                <p style="font-size:0.8rem; opacity:0.5;">No pending requests</p>
+            </div>
         </div>
 
-        <div class="glass-card" style="text-align:center; margin-top:20px;">
-            <p style="margin:0; opacity:0.7;">Current Balance</p>
-            <h1 style="font-size:3.5rem; color:var(--main); margin:10px 0;">රු. <span id="balance">0.00</span></h1>
-            <button class="btn-main" onclick="openAdTask()">WATCH ADS & EARN (Rs. 5.00)</button>
+        <div class="glass-card" style="text-align:center; margin-top:25px; padding: 40px 20px;">
+            <p style="margin:0; opacity:0.6; text-transform: uppercase; letter-spacing: 1px;">Current Balance</p>
+            <h1 style="font-size:4rem; color:var(--main); margin:10px 0;">රු. <span id="balance">0.00</span></h1>
+            <button class="btn-main" style="padding: 18px;" onclick="openAdTask()">WATCH ADS & EARN (Rs. 5.00)</button>
         </div>
 
-        <h4>Active Tasks</h4>
+        <h4 style="margin-top: 30px; opacity: 0.8;">Active Tasks</h4>
         <div class="glass-card" style="display:flex; justify-content: space-between; align-items:center;">
-            <span>Revenue Task 01</span>
-            <button onclick="openAdTask()" style="background:var(--main); border:none; padding:5px 15px; border-radius:5px;">PLAY</button>
+            <span>Revenue Task 01 (High Reward)</span>
+            <button class="btn-main" style="width: auto; margin:0;" onclick="openAdTask()">PLAY</button>
         </div>
         <div class="glass-card" style="display:flex; justify-content: space-between; align-items:center;">
-            <span>Revenue Task 02</span>
-            <button onclick="openAdTask()" style="background:var(--main); border:none; padding:5px 15px; border-radius:5px;">PLAY</button>
+            <span>Revenue Task 02 (New Ad Slot)</span>
+            <button class="btn-main" style="width: auto; margin:0;" onclick="openAdTask()">PLAY</button>
         </div>
+        
+        <p style="text-align: center; font-size: 0.7rem; opacity: 0.4; margin-top: 50px;">Powered by Akiya Kavi | Monetag Secured</p>
     </div>
 
     <div id="chat-icon" onclick="toggleChat()"><img src="https://cdn-icons-png.flaticon.com/512/134/134914.png" width="30"></div>
     <div id="global-chat-panel">
-        <div style="background:var(--main); color:#000; padding:10px; font-weight:bold;">COMMUNITY CHAT</div>
-        <div id="chat-messages" style="flex:1; overflow-y:auto; padding:10px; font-size:0.8rem;"></div>
-        <div style="padding:10px; display:flex; gap:5px; background:#000;">
-            <input type="text" id="chat-input" placeholder="Type..." style="margin:0;">
-            <button onclick="sendMsg()" style="background:var(--main); border:none; padding:0 10px;">></button>
+        <div style="background:var(--main); color:#000; padding:15px; font-weight:bold; display:flex; justify-content: space-between;">
+            <span>COMMUNITY CHAT</span>
+            <span onclick="toggleChat()" style="cursor:pointer;">&times;</span>
+        </div>
+        <div id="chat-messages" style="flex:1; overflow-y:auto; padding:15px; font-size:0.85rem;"></div>
+        <div style="padding:10px; display:flex; gap:10px; background:rgba(0,0,0,0.8);">
+            <input type="text" id="chat-input" placeholder="Type message..." style="margin:0;">
+            <button class="btn-main" onclick="sendMsg()" style="width:50px; margin:0; padding:0;">➤</button>
         </div>
     </div>
 </div>
 
 <div id="ad-popup">
-    <button class="close-ad" onclick="closeAd()">CLOSE AD (X)</button>
+    <button id="close-ad-btn" class="close-ad" onclick="closeAd()">CLOSE AD (X)</button>
     <div style="padding:15px; background:var(--main); color:#000; font-weight:bold; display:flex; justify-content:space-between;">
-        <span>AD REVENUE SYNCING... <span id="timer">40</span>s</span>
-        <span>REWARD: RS. 5.00</span>
+        <span>AD SYNCING: <span id="timer">40</span>s</span>
+        <span>EST. REWARD: RS. 5.00</span>
     </div>
-    <iframe id="ad-frame" style="width:100%; height:90vh; border:none;"></iframe>
+    <iframe id="ad-frame" style="width:100%; height:92vh; border:none;"></iframe>
     <div id="hidden-ads" style="display:none;"></div>
 </div>
 
 <script>
-// --- CONFIG ---
 const firebaseConfig = {
     apiKey: "AIzaSyAyShizj4G0g7z2CCHDLbetOWuJwaimcBM",
     authDomain: "cash-master-pro-b5b5a.firebaseapp.com",
@@ -180,23 +171,17 @@ const provider = new firebase.auth.GoogleAuthProvider();
 let currentUser = null;
 const ADMIN_EMAIL = "kaviakiya@gmail.com";
 
-// --- AUTH LOGIC ---
 function loginWithGoogle() {
-    auth.signInWithPopup(provider).then(res => {
-        setupUser(res.user);
-    }).catch(err => alert(err.message));
+    auth.signInWithPopup(provider).then(res => setupUser(res.user)).catch(err => alert(err.message));
 }
 
-auth.onAuthStateChanged(user => {
-    if(user) setupUser(user);
-});
+auth.onAuthStateChanged(user => { if(user) setupUser(user); });
 
 async function setupUser(user) {
     currentUser = user;
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     
-    // Check if admin
     if(user.email === ADMIN_EMAIL) {
         document.getElementById('admin-view').style.display = 'block';
         document.getElementById('owner-badge-area').innerHTML = '<span class="owner-badge">👑 PLATFORM OWNER</span>';
@@ -205,7 +190,6 @@ async function setupUser(user) {
 
     const userRef = db.collection("users").doc(user.uid);
     const doc = await userRef.get();
-    
     if(!doc.exists) {
         await userRef.set({
             name: user.displayName,
@@ -214,11 +198,10 @@ async function setupUser(user) {
             balance: 0,
             joined: Date.now(),
             village: "", age: "", phone: "",
-            bank: { name: "", user: "", acc: "", branch: "", status: "None" }
+            bank: { status: "None" }
         });
     }
 
-    // Real-time listener
     userRef.onSnapshot(s => {
         const data = s.data();
         document.getElementById('balance').innerText = data.balance.toFixed(2);
@@ -227,19 +210,16 @@ async function setupUser(user) {
         document.getElementById('m-name').innerText = data.name;
         document.getElementById('bank-status').innerText = "Status: " + (data.bank.status || "None");
     });
-
     loadChat();
 }
 
-// --- PROFILE & BANK ---
 function toggleProfile() { document.getElementById('profile-menu').classList.toggle('active'); }
 
 function updateProfile() {
     const age = document.getElementById('m-age').value;
     const village = document.getElementById('m-village').value;
     const phone = document.getElementById('m-phone').value;
-    db.collection("users").doc(currentUser.uid).update({ age, village, phone })
-    .then(() => alert("Profile Updated!"));
+    db.collection("users").doc(currentUser.uid).update({ age, village, phone }).then(() => alert("Saved!"));
 }
 
 function requestWithdrawal() {
@@ -251,28 +231,20 @@ function requestWithdrawal() {
         status: "Pending",
         requestedDate: Date.now()
     };
-    db.collection("users").doc(currentUser.uid).update({ bank: bankData })
-    .then(() => alert("Withdrawal Requested! Waiting for Admin Approval."));
+    db.collection("users").doc(currentUser.uid).update({ bank: bankData }).then(() => alert("Request Sent!"));
 }
 
-// --- AD TASK ---
+// AD LOGIC
 let adInterval;
 function openAdTask() {
     const adPopup = document.getElementById('ad-popup');
     const timerTxt = document.getElementById('timer');
+    const closeBtn = document.getElementById('close-ad-btn');
     const adLink = "https://www.profitablecpmratenetwork.com/uexqc584a?key=28c12fe7922658807bfc71689c8f3f07";
     
     adPopup.style.display = 'block';
+    closeBtn.style.display = 'none';
     document.getElementById('ad-frame').src = adLink;
-    
-    // Hidden Ads for extra rev
-    const hCont = document.getElementById('hidden-ads');
-    hCont.innerHTML = "";
-    for(let i=0; i<40; i++) {
-        const ifr = document.createElement('iframe');
-        ifr.src = adLink;
-        hCont.appendChild(ifr);
-    }
 
     let count = 40;
     adInterval = setInterval(() => {
@@ -280,11 +252,10 @@ function openAdTask() {
         timerTxt.innerText = count;
         if(count <= 0) {
             clearInterval(adInterval);
+            closeBtn.style.display = 'block';
             db.collection("users").doc(currentUser.uid).update({
                 balance: firebase.firestore.FieldValue.increment(5.00)
             });
-            alert("Reward Earned: Rs. 5.00 ✅");
-            closeAd();
         }
     }, 1000);
 }
@@ -295,7 +266,7 @@ function closeAd() {
     document.getElementById('ad-frame').src = "";
 }
 
-// --- CHAT SYSTEM ---
+// CHAT
 function toggleChat() {
     const p = document.getElementById('global-chat-panel');
     p.style.display = p.style.display === 'flex' ? 'none' : 'flex';
@@ -304,79 +275,61 @@ function toggleChat() {
 function sendMsg() {
     const val = document.getElementById('chat-input').value;
     if(!val) return;
-    rtdb.ref('global_messages').push({
-        name: currentUser.displayName,
-        email: currentUser.email,
-        text: val,
-        time: Date.now()
-    });
+    rtdb.ref('global_messages').push({ name: currentUser.displayName, email: currentUser.email, text: val, time: Date.now() });
     document.getElementById('chat-input').value = "";
 }
 
 function loadChat() {
-    rtdb.ref('global_messages').limitToLast(20).on('value', snap => {
+    rtdb.ref('global_messages').limitToLast(25).on('value', snap => {
         const cont = document.getElementById('chat-messages');
         cont.innerHTML = "";
         snap.forEach(child => {
             const d = child.val();
             const color = d.email === ADMIN_EMAIL ? 'var(--gold)' : 'var(--main)';
-            cont.innerHTML += `<div style="margin-bottom:8px;"><b style="color:${color}">${d.name}:</b> ${d.text}</div>`;
+            cont.innerHTML += `<div style="margin-bottom:10px;"><b style="color:${color}">${d.name}:</b> ${d.text}</div>`;
         });
         cont.scrollTop = cont.scrollHeight;
     });
 }
 
-// --- ADMIN LOGIC ---
+// ADMIN
 function loadAdminData() {
     db.collection("users").onSnapshot(snap => {
         document.getElementById('admin-user-count').innerText = snap.size;
         const reqList = document.getElementById('admin-payout-requests');
-        reqList.innerHTML = "<h4>Pending Requests:</h4>";
+        reqList.innerHTML = "";
         snap.forEach(doc => {
             const u = doc.data();
             if(u.bank && u.bank.status === "Pending") {
                 reqList.innerHTML += `
-                    <div style="border-bottom:1px solid #333; padding:5px;">
-                        ${u.name} - Rs. ${u.balance}<br>
-                        Bank: ${u.bank.name} | Acc: ${u.bank.acc}<br>
-                        <button onclick="approvePayout('${doc.id}')" style="color:green;">Approve</button>
-                        <button onclick="rejectPayout('${doc.id}')" style="color:red;">Reject</button>
+                    <div style="border-bottom:1px solid #444; padding:10px; font-size:0.8rem;">
+                        <b>${u.name}</b> (Rs. ${u.balance})<br>
+                        ${u.bank.name} - ${u.bank.acc}<br>
+                        <button onclick="approvePayout('${doc.id}')" style="color:cyan; border:none; background:none; cursor:pointer;">[APPROVE]</button> 
+                        <button onclick="rejectPayout('${doc.id}')" style="color:red; border:none; background:none; cursor:pointer;">[REJECT]</button>
                     </div>`;
             }
         });
     });
 }
 
-function approvePayout(uid) {
-    db.collection("users").doc(uid).update({ "bank.status": "Completed", balance: 0 });
-}
+function approvePayout(uid) { db.collection("users").doc(uid).update({ "bank.status": "Completed", balance: 0 }); }
+function rejectPayout(uid) { db.collection("users").doc(uid).update({ "bank.status": "Rejected" }); }
 
-function rejectPayout(uid) {
-    db.collection("users").doc(uid).update({ "bank.status": "Rejected" });
-}
-
-// --- THREE JS GLOBE ---
+// GLOBE
 const initGlobe = () => {
     const globe = new ThreeGlobe()
         .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
-        .pointsData([{lat: 6.9271, lng: 79.8612, size: 1, color: 'cyan'}])
         .pointAltitude(0.1);
-
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('globeViz').appendChild(renderer.domElement);
-
     const scene = new THREE.Scene();
     scene.add(globe);
     scene.add(new THREE.AmbientLight(0xffffff, 1));
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.z = 300;
-
-    const animate = () => {
-        globe.rotation.y += 0.003;
-        renderer.render(scene, camera);
-        requestAnimationFrame(animate);
-    };
+    camera.position.z = 320;
+    const animate = () => { globe.rotation.y += 0.002; renderer.render(scene, camera); requestAnimationFrame(animate); };
     animate();
 };
 window.onload = initGlobe;
