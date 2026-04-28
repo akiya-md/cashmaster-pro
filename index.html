@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CashMaster PRO | Official Platinum</title>
+    <title>CashMaster PRO | Platinum Edition</title>
     
     <meta name="monetag" content="27213a6f8a8ce2199a7ac816d20f9984">
     <script src="https://quge5.com/88/tag.min.js" data-zone="234281" async data-cfasync="false"></script>
@@ -28,25 +28,20 @@
         .glass-card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin-bottom: 15px; transition: 0.3s; }
         .btn-main { background: var(--main); color: #000; border: none; padding: 12px 25px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 10px; }
         
-        /* Admin Styling */
-        #admin-panel { display: none; background: rgba(0,0,0,0.9); border: 2px solid var(--gold); margin-top: 20px; padding: 20px; border-radius: 20px; }
-        .user-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333; font-size: 0.8rem; }
-        
-        /* Rules Styling */
-        .rules-box { font-size: 0.85rem; line-height: 1.6; border-left: 4px solid var(--main); padding-left: 15px; }
-        .lang-title { font-weight: bold; color: var(--main); margin-top: 10px; display: block; }
+        /* Banner Ad Slots */
+        .ad-slot { width: 100%; height: 90px; background: rgba(255,255,255,0.02); margin: 10px 0; border: 1px dashed #444; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #666; border-radius: 10px; }
 
-        /* Profile & Modals */
+        #admin-panel { display: none; background: rgba(0,0,0,0.95); border: 2px solid var(--gold); margin-top: 20px; padding: 20px; border-radius: 20px; }
+        .user-row { border-bottom: 1px solid #333; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+
         #profile-menu { position: fixed; right: -100%; top: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.98); backdrop-filter: blur(20px); transition: 0.5s; z-index: 200; overflow-y: auto; padding: 20px; box-sizing: border-box; }
         #profile-menu.active { right: 0; }
 
         input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; }
-        
         #ad-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
         .modal-content { background: #111; padding: 30px; border-radius: 20px; border: 2px solid var(--main); width: 400px; text-align: center; }
-
+        .bank-locked { opacity: 0.4; pointer-events: none; }
         .hidden { display: none !important; }
-        .bank-locked { opacity: 0.5; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -56,113 +51,86 @@
 <div id="login-screen" style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
     <img src="cashmasterlogo.png" width="120" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2111/2111415.png'">
     <h1 style="letter-spacing: 2px;">CASHMASTER <span style="color:var(--main)">PRO</span></h1>
+    <p style="opacity:0.6;">Watch Ads & Earn Real Cash</p>
     <button class="btn-main" style="width:auto;" onclick="loginWithGoogle()">Sign in with Google</button>
 </div>
 
 <div id="app" style="display:none;">
-    
     <div id="profile-menu">
         <button onclick="toggleProfile()" style="float:right; background:none; border:none; color:white; font-size:2rem;">&times;</button>
         <center>
-            <div style="position:relative; width:110px;">
-                <img id="m-dp" style="width:110px; height:110px; border-radius:50%; border:3px solid var(--main); object-fit:cover;">
-                <label for="dp-input" style="position:absolute; bottom:0; right:0; background:var(--main); border-radius:50%; padding:5px; cursor:pointer;">📸</label>
-                <input type="file" id="dp-input" class="hidden" onchange="uploadDP(this)">
-            </div>
+            <img id="m-dp" style="width:110px; height:110px; border-radius:50%; border:3px solid var(--main); object-fit:cover;">
             <h2 id="m-name">User</h2>
-            <div id="user-tier">Member</div>
+            <p id="u-joined" style="font-size:0.7rem; opacity:0.5;"></p>
         </center>
 
         <div class="glass-card">
-            <h4>🎁 REDEEM GIFT CODE</h4>
-            <input type="text" id="redeem-input" placeholder="Enter 8-digit code">
-            <button class="btn-main" onclick="redeemCode()">REDEEM NOW</button>
-        </div>
-
-        <div id="bank-form-container" class="glass-card bank-locked">
-            <h4>🏦 BANK WITHDRAWAL</h4>
-            <p id="lock-msg" style="color:var(--red); font-size:0.8rem;">Locked: Need Rs. 5000 & 21 Days</p>
-            <select id="bank-name">
-                <option value="">Select Your Bank</option>
-                <option value="BOC">Bank of Ceylon (BOC)</option>
-                <option value="Peoples">People's Bank</option>
-                <option value="Sampath">Sampath Bank</option>
-                <option value="Commercial">Commercial Bank</option>
-                <option value="HNB">Hatton National Bank (HNB)</option>
-                <option value="NDB">NDB Bank</option>
-            </select>
-            <input type="text" id="bank-acc" placeholder="Account Number">
-            <input type="text" id="bank-user" placeholder="Account Holder Name">
-            <button class="btn-main" style="background:var(--gold)" onclick="requestWithdrawal()">SUBMIT REQUEST</button>
-        </div>
-
-        <div class="glass-card">
-            <h4>💬 PRIVATE SUPPORT (ADMIN)</h4>
-            <div id="admin-chat-box" style="height:150px; overflow-y:auto; background:rgba(0,0,0,0.3); padding:10px; margin-bottom:10px;"></div>
-            <div style="display:flex; gap:5px;">
-                <input type="text" id="admin-msg-input" placeholder="Ask anything..." style="margin:0;">
-                <button class="btn-main" style="width:50px; margin:0;" onclick="sendAdminMsg()">➤</button>
+            <h4>🏦 WITHDRAWAL (MIN: Rs. 2000)</h4>
+            <div id="bank-form" class="bank-locked">
+                <input type="text" id="bank-acc" placeholder="Bank Account Number">
+                <input type="text" id="bank-holder" placeholder="Account Holder Name">
+                <select id="bank-name">
+                    <option value="BOC">BOC</option>
+                    <option value="PEOPLES">People's Bank</option>
+                    <option value="SAMPATH">Sampath</option>
+                </select>
+                <button class="btn-main" style="background:var(--gold)" onclick="submitWithdraw()">REQUEST PAYOUT</button>
             </div>
+            <p id="lock-reason" style="color:var(--red); font-size:0.7rem; margin-top:10px;">Locked: Need Rs. 2000 & 21 Days Active.</p>
         </div>
     </div>
 
     <div class="container">
+        <div class="ad-slot"><script src="https://quge5.com/88/tag.min.js" data-zone="234281" async data-cfasync="false"></script></div>
+
         <div style="display:flex; justify-content: space-between; align-items: center; margin:20px 0;">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <img src="cashmasterlogo.png" width="40" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2111/2111415.png'">
-                <h3 style="margin:0;">CASHMASTER <span style="color:var(--main)">PRO</span></h3>
-            </div>
+            <h3>CASHMASTER <span style="color:var(--main)">PRO</span></h3>
             <img id="u-head-dp" style="width:40px; height:40px; border-radius:50%; border:2px solid var(--main); cursor:pointer;" onclick="toggleProfile()">
         </div>
 
         <div id="admin-panel">
-            <h3 style="color:var(--gold)">👑 OWNER MASTER CONTROL</h3>
-            <canvas id="trafficChart" style="width:100%; height:200px; margin-bottom:20px;"></canvas>
-            
-            <h4>User Management</h4>
-            <div id="admin-user-list" style="max-height:300px; overflow-y:auto; background:#111; padding:10px;"></div>
-            
-            <h4 style="margin-top:20px;">Redeem Code Generator</h4>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="new-code" placeholder="8 Digit Code">
-                <input type="number" id="code-val" placeholder="Coins">
-                <button class="btn-main" onclick="genCode()">SAVE</button>
+            <h3 style="color:var(--gold)">OWNER CONTROL</h3>
+            <div id="admin-withdrawals" style="max-height:200px; overflow-y:auto; margin-bottom:20px;">
+                <h4>Pending Withdrawals</h4>
+                <div id="payout-list"></div>
             </div>
+            <button class="btn-main" onclick="loadUsers()">LOAD ALL USERS</button>
+            <div id="admin-user-list"></div>
         </div>
 
         <div class="glass-card" style="text-align:center; padding: 40px 20px;">
-            <p style="opacity:0.6; font-size:0.8rem;">AVAILABLE BALANCE</p>
+            <p style="opacity:0.6; font-size:0.8rem;">TOTAL EARNINGS</p>
             <h1 style="font-size:3.5rem; color:var(--main); margin:10px 0;">රු. <span id="balance">0.00</span></h1>
-            <button class="btn-main" id="main-ad-btn" style="padding:18px;" onclick="startAdTask()">WATCH ADS & EARN (Rs. 5.00)</button>
+            <button class="btn-main" id="main-ad-btn" style="padding:18px;" onclick="startAdTask()">GET RS. 0.50 (WATCH AD)</button>
         </div>
 
-        <div class="glass-card rules-box">
-            <h4>📖 RULES & REGULATIONS</h4>
-            <span class="lang-title">සිංහල (Sinhala)</span>
-            <ul>
-                <li>අවම මුදල් ලබාගැනීම රු. 5000.00 කි.</li>
-                <li>ගිණුමට දින 21 ක් සම්පූර්ණ විය යුතුය.</li>
-                <li>දැන්වීමක් තත්පර 30 ක් නැරඹීම අනිවාර්ය වේ.</li>
-            </ul>
-            <span class="lang-title">English</span>
-            <ul>
-                <li>Minimum payout is Rs. 5000.00.</li>
-                <li>Account age must be at least 21 days.</li>
-                <li>Wait 30 seconds per ad to claim reward.</li>
+        <div class="ad-slot"><script src="https://quge5.com/88/tag.min.js" data-zone="234281" async data-cfasync="false"></script></div>
+
+        <div class="glass-card">
+            <h4>📜 PAYMENT TERMS</h4>
+            <ul style="font-size:0.8rem; opacity:0.8;">
+                <li>එක් ඇඩ් එකක් සඳහා රු. 0.50 ක් ගෙවනු ලැබේ.</li>
+                <li>අවම මුදල් ලබාගැනීම රු. 2000.00 කි.</li>
+                <li>සති 3ක් අඛණ්ඩව වැඩ කළ යුතුය.</li>
             </ul>
         </div>
-    </div>
+
+       <div class="ad-slot" onclick="window.open('https://omg10.com/4/10935818', '_blank')" style="cursor:pointer; background: linear-gradient(45deg, #00d2ff, #3a7bd5); color: black; font-weight: bold; border: none;">
+    🔥 CLICK HERE TO EARN EXTRA BONUS RS. 2.00 🔥
+    <br><small>(Limited Time Offer)</small>
+
 </div>
 
 <div id="ad-modal">
     <div class="modal-content">
-        <h2 id="modal-title">Ad Running...</h2>
+        <h2 id="modal-title">Loading Secure Ad...</h2>
         <div id="timer-circle" style="font-size: 3.5rem; color: var(--main); margin: 20px 0;">30</div>
-        <button id="claim-btn" class="btn-main" style="display:none;" onclick="claimReward()">CLAIM REWARD</button>
+        <button id="claim-btn" class="btn-main" style="display:none;" onclick="claimReward()">CLAIM RS. 0.50</button>
     </div>
 </div>
 
 <script>
+// Firebase Setup
 const firebaseConfig = {
     apiKey: "AIzaSyAyShizj4G0g7z2CCHDLbetOWuJwaimcBM",
     authDomain: "cash-master-pro-b5b5a.firebaseapp.com",
@@ -175,7 +143,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-const rtdb = firebase.database();
 
 let currentUser = null;
 const ADMIN_EMAIL = "kaviakiya@gmail.com";
@@ -195,13 +162,11 @@ async function setupUser(user) {
 
     if(user.email === ADMIN_EMAIL) {
         document.getElementById('admin-panel').style.display = 'block';
-        document.getElementById('main-ad-btn').classList.add('hidden');
-        loadAdminDashboard();
+        loadAdminData();
     }
 
     const userRef = db.collection("users").doc(user.uid);
     const doc = await userRef.get();
-    
     if(!doc.exists) {
         await userRef.set({
             name: user.displayName, email: user.email, dp: user.photoURL,
@@ -211,34 +176,32 @@ async function setupUser(user) {
 
     userRef.onSnapshot(s => {
         const d = s.data();
-        if(d.isBanned) { alert("YOUR ACCOUNT IS BANNED!"); location.reload(); return; }
-        
+        if(d.isBanned) { alert("BANNED"); location.reload(); return; }
         document.getElementById('balance').innerText = d.balance.toFixed(2);
         document.getElementById('m-name').innerText = d.name;
         document.getElementById('m-dp').src = d.dp;
         document.getElementById('u-head-dp').src = d.dp;
-
-        // Unlock Logic
-        const daysDiff = (Date.now() - d.joined) / (1000 * 60 * 60 * 24);
-        if(d.balance >= 5000 && daysDiff >= 21) {
-            document.getElementById('bank-form-container').classList.remove('bank-locked');
-            document.getElementById('lock-msg').innerText = "✅ Bank Form Unlocked!";
-            document.getElementById('lock-msg').style.color = "var(--green)";
+        
+        // Payout Lock Logic
+        const days = (Date.now() - d.joined) / (1000*60*60*24);
+        if(d.balance >= 2000 && days >= 21) {
+            document.getElementById('bank-form').classList.remove('bank-locked');
+            document.getElementById('lock-reason').innerText = "✅ You can withdraw now!";
+            document.getElementById('lock-reason').style.color = "var(--green)";
         }
     });
 }
 
-// AD LOGIC
 function startAdTask() {
     window.open(DIRECT_LINK, '_blank');
     const modal = document.getElementById('ad-modal');
     modal.style.display = 'flex';
     let time = 30;
-    const timer = setInterval(() => {
+    const itv = setInterval(() => {
         time--;
         document.getElementById('timer-circle').innerText = time;
         if(time <= 0) {
-            clearInterval(timer);
+            clearInterval(itv);
             document.getElementById('claim-btn').style.display = 'block';
             document.getElementById('timer-circle').innerText = "✅";
         }
@@ -247,67 +210,51 @@ function startAdTask() {
 
 function claimReward() {
     db.collection("users").doc(currentUser.uid).update({
-        balance: firebase.firestore.FieldValue.increment(5.0)
+        balance: firebase.firestore.FieldValue.increment(0.50)
     }).then(() => {
         document.getElementById('ad-modal').style.display = 'none';
         document.getElementById('claim-btn').style.display = 'none';
     });
 }
 
-// ADMIN DASHBOARD
-function loadAdminDashboard() {
-    // Traffic Chart (Sample Data)
-    new Chart(document.getElementById('trafficChart'), {
-        type: 'bar',
-        data: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            datasets: [{ label: 'Visitors', data: [12, 19, 3, 5, 2, 3, 20], backgroundColor: '#00d2ff' }]
-        }
-    });
+function submitWithdraw() {
+    const data = {
+        uid: currentUser.uid,
+        name: currentUser.displayName,
+        bank: document.getElementById('bank-name').value,
+        acc: document.getElementById('bank-acc').value,
+        holder: document.getElementById('bank-holder').value,
+        status: "Pending",
+        time: Date.now()
+    };
+    db.collection("withdrawals").add(data).then(() => alert("Request Sent!"));
+}
 
-    // Load User List
-    db.collection("users").onSnapshot(snap => {
-        const list = document.getElementById('admin-user-list');
-        list.innerHTML = "";
+// Admin Tools
+function loadAdminData() {
+    db.collection("withdrawals").where("status", "==", "Pending").onSnapshot(snap => {
+        const div = document.getElementById('payout-list');
+        div.innerHTML = "";
         snap.forEach(doc => {
-            const u = doc.data();
-            list.innerHTML += `
-                <div class="user-row">
-                    <span><b>${u.name}</b><br>${u.email}</span>
-                    <span>Rs. ${u.balance.toFixed(2)}</span>
-                    <button onclick="banUser('${doc.id}')" style="background:red; color:white; border:none; border-radius:5px;">BAN</button>
-                </div>`;
+            const w = doc.data();
+            div.innerHTML += `<div class="user-row">
+                <span>${w.name} - ${w.bank}</span>
+                <button onclick="approvePayout('${doc.id}', '${w.uid}')">APPROVE</button>
+            </div>`;
         });
     });
 }
 
-function genCode() {
-    const code = document.getElementById('new-code').value;
-    const val = parseFloat(document.getElementById('code-val').value);
-    db.collection("redeem").doc(code).set({ value: val });
-    alert("Code Saved!");
-}
-
-function redeemCode() {
-    const code = document.getElementById('redeem-input').value;
-    db.collection("redeem").doc(code).get().then(doc => {
-        if(doc.exists) {
-            const amount = doc.data().value;
-            db.collection("users").doc(currentUser.uid).update({
-                balance: firebase.firestore.FieldValue.increment(amount)
-            });
-            db.collection("redeem").doc(code).delete();
-            alert("Congrats! You got Rs. " + amount);
-        } else {
-            alert("Invalid Code!");
-        }
-    });
+function approvePayout(docId, userId) {
+    db.collection("withdrawals").doc(docId).update({ status: "Paid" });
+    db.collection("users").doc(userId).update({ balance: 0 }); // Reset balance after pay
+    alert("Approved!");
 }
 
 function toggleProfile() { document.getElementById('profile-menu').classList.toggle('active'); }
 
 // Globe
-const initGlobe = () => {
+window.onload = () => {
     const globe = new ThreeGlobe().globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg');
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -320,7 +267,6 @@ const initGlobe = () => {
     const animate = () => { globe.rotation.y += 0.001; renderer.render(scene, camera); requestAnimationFrame(animate); };
     animate();
 };
-window.onload = initGlobe;
 </script>
 </body>
 </html>
