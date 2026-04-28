@@ -6,6 +6,7 @@
     <title>CashMaster PRO | Official</title>
     
     <meta name="monetag" content="27213a6f8a8ce2199a7ac816d20f9984">
+    <script src="https://quge5.com/88/tag.min.js" data-zone="234281" async data-cfasync="false"></script>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
@@ -39,7 +40,6 @@
         .btn-main:active { transform: scale(0.98); }
         .btn-google { background: #fff; color: #444; border: none; padding: 12px 25px; border-radius: 50px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
 
-        /* Chat & Ad Popup */
         #chat-icon { position: fixed; bottom: 20px; right: 20px; background: var(--main); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 150; box-shadow: 0 5px 20px rgba(0,210,255,0.4); }
         #global-chat-panel { position: fixed; bottom: 90px; right: 20px; width: 320px; height: 450px; background: rgba(10,10,25,0.95); border: 1px solid var(--main); border-radius: 15px; display: none; flex-direction: column; z-index: 150; overflow: hidden; }
 
@@ -117,11 +117,7 @@
 
         <h4 style="margin-top: 30px; opacity: 0.8;">Active Tasks</h4>
         <div class="glass-card" style="display:flex; justify-content: space-between; align-items:center;">
-            <span>Revenue Task 01 (High Reward)</span>
-            <button class="btn-main" style="width: auto; margin:0;" onclick="openAdTask()">PLAY</button>
-        </div>
-        <div class="glass-card" style="display:flex; justify-content: space-between; align-items:center;">
-            <span>Revenue Task 02 (New Ad Slot)</span>
+            <span>Revenue Task 01 (Multi-Ad Mix)</span>
             <button class="btn-main" style="width: auto; margin:0;" onclick="openAdTask()">PLAY</button>
         </div>
         
@@ -149,7 +145,6 @@
         <span>EST. REWARD: RS. 5.00</span>
     </div>
     <iframe id="ad-frame" style="width:100%; height:92vh; border:none;"></iframe>
-    <div id="hidden-ads" style="display:none;"></div>
 </div>
 
 <script>
@@ -171,10 +166,7 @@ const provider = new firebase.auth.GoogleAuthProvider();
 let currentUser = null;
 const ADMIN_EMAIL = "kaviakiya@gmail.com";
 
-function loginWithGoogle() {
-    auth.signInWithPopup(provider).then(res => setupUser(res.user)).catch(err => alert(err.message));
-}
-
+function loginWithGoogle() { auth.signInWithPopup(provider).then(res => setupUser(res.user)); }
 auth.onAuthStateChanged(user => { if(user) setupUser(user); });
 
 async function setupUser(user) {
@@ -192,23 +184,18 @@ async function setupUser(user) {
     const doc = await userRef.get();
     if(!doc.exists) {
         await userRef.set({
-            name: user.displayName,
-            email: user.email,
-            dp: user.photoURL || "cashmasterlogo.png",
-            balance: 0,
-            joined: Date.now(),
-            village: "", age: "", phone: "",
-            bank: { status: "None" }
+            name: user.displayName, email: user.email, dp: user.photoURL,
+            balance: 0, joined: Date.now(), bank: { status: "None" }
         });
     }
 
     userRef.onSnapshot(s => {
-        const data = s.data();
-        document.getElementById('balance').innerText = data.balance.toFixed(2);
-        document.getElementById('u-head-dp').src = data.dp;
-        document.getElementById('m-dp').src = data.dp;
-        document.getElementById('m-name').innerText = data.name;
-        document.getElementById('bank-status').innerText = "Status: " + (data.bank.status || "None");
+        const d = s.data();
+        document.getElementById('balance').innerText = d.balance.toFixed(2);
+        document.getElementById('u-head-dp').src = d.dp;
+        document.getElementById('m-dp').src = d.dp;
+        document.getElementById('m-name').innerText = d.name;
+        document.getElementById('bank-status').innerText = "Status: " + (d.bank.status || "None");
     });
     loadChat();
 }
@@ -228,18 +215,17 @@ function requestWithdrawal() {
         user: document.getElementById('bank-user').value,
         acc: document.getElementById('bank-acc').value,
         branch: document.getElementById('bank-branch').value,
-        status: "Pending",
-        requestedDate: Date.now()
+        status: "Pending", requestedDate: Date.now()
     };
     db.collection("users").doc(currentUser.uid).update({ bank: bankData }).then(() => alert("Request Sent!"));
 }
 
-// AD LOGIC
 let adInterval;
 function openAdTask() {
     const adPopup = document.getElementById('ad-popup');
     const timerTxt = document.getElementById('timer');
     const closeBtn = document.getElementById('close-ad-btn');
+    // මෙතනට ඔයාගේ Direct Link එක දාන්න (දැනට මේක වැඩ)
     const adLink = "https://www.profitablecpmratenetwork.com/uexqc584a?key=28c12fe7922658807bfc71689c8f3f07";
     
     adPopup.style.display = 'block';
@@ -261,12 +247,10 @@ function openAdTask() {
 }
 
 function closeAd() {
-    clearInterval(adInterval);
     document.getElementById('ad-popup').style.display = 'none';
     document.getElementById('ad-frame').src = "";
 }
 
-// CHAT
 function toggleChat() {
     const p = document.getElementById('global-chat-panel');
     p.style.display = p.style.display === 'flex' ? 'none' : 'flex';
@@ -292,7 +276,6 @@ function loadChat() {
     });
 }
 
-// ADMIN
 function loadAdminData() {
     db.collection("users").onSnapshot(snap => {
         document.getElementById('admin-user-count').innerText = snap.size;
@@ -305,7 +288,7 @@ function loadAdminData() {
                     <div style="border-bottom:1px solid #444; padding:10px; font-size:0.8rem;">
                         <b>${u.name}</b> (Rs. ${u.balance})<br>
                         ${u.bank.name} - ${u.bank.acc}<br>
-                        <button onclick="approvePayout('${doc.id}')" style="color:cyan; border:none; background:none; cursor:pointer;">[APPROVE]</button> 
+                        <button onclick="approvePayout('${doc.id}')" style="color:cyan; border:none; background:none; cursor:pointer;">[APPROVE]</button>
                         <button onclick="rejectPayout('${doc.id}')" style="color:red; border:none; background:none; cursor:pointer;">[REJECT]</button>
                     </div>`;
             }
@@ -316,11 +299,8 @@ function loadAdminData() {
 function approvePayout(uid) { db.collection("users").doc(uid).update({ "bank.status": "Completed", balance: 0 }); }
 function rejectPayout(uid) { db.collection("users").doc(uid).update({ "bank.status": "Rejected" }); }
 
-// GLOBE
 const initGlobe = () => {
-    const globe = new ThreeGlobe()
-        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
-        .pointAltitude(0.1);
+    const globe = new ThreeGlobe().globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg').pointAltitude(0.1);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('globeViz').appendChild(renderer.domElement);
