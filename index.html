@@ -19,23 +19,17 @@
     <style>
         :root { --main: #00d2ff; --bg: #020617; --gold: #ffd700; --glass: rgba(255, 255, 255, 0.05); --red: #ff4757; --green: #2ecc71; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
-        
         #globeViz { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100vh; }
         .container { max-width: 900px; margin: auto; padding: 15px; position: relative; z-index: 10; }
-
         .glass-card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin-bottom: 15px; transition: 0.3s; }
         .btn-main { background: var(--main); color: #000; border: none; padding: 12px 25px; border-radius: 12px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; }
         .btn-gold { background: var(--gold); color: black; }
-
-        /* Custom Ad Styles */
         .business-ad { width: 100%; border-radius: 15px; border: 1px solid var(--gold); cursor: pointer; margin: 10px 0; display: none; }
-
         #admin-panel { display: none; background: rgba(0,0,0,0.95); border: 2px solid var(--gold); padding: 20px; border-radius: 20px; margin-top: 20px; }
         input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; }
-        
         #ad-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
         .modal-content { background: #111; padding: 30px; border-radius: 20px; border: 2px solid var(--main); text-align: center; }
-        
+        .task-img { width: 100%; border-radius: 15px; margin: 10px 0; border: 1px solid #444; }
         .ref-box { background: #000; padding: 10px; border-radius: 10px; font-size: 0.8rem; border: 1px dashed var(--main); margin: 10px 0; word-break: break-all; }
         .bank-locked { opacity: 0.4; pointer-events: none; }
     </style>
@@ -64,12 +58,18 @@
         <div id="admin-panel">
             <h3 style="color:var(--gold)">👑 OWNER MASTER CONTROL</h3>
             <div class="glass-card">
-                <h4>📢 SET BUSINESS AD (Image & Link)</h4>
-                <input type="text" id="adm-ad-img" placeholder="Image URL (e.g. https://site.com/photo.jpg)">
-                <input type="text" id="adm-ad-url" placeholder="Destination Link (e.g. https://wa.me/...)">
-                <button class="btn-main" onclick="saveBusinessAd()">UPDATE BUSINESS AD</button>
+                <h4>🎯 CREATE AI/IMAGE TASK (10% TO USER)</h4>
+                <input type="text" id="adm-task-img" placeholder="Image URL for Task">
+                <input type="text" id="adm-task-opts" placeholder="Options (e.g. Car, Van, Bus)">
+                <input type="number" id="adm-task-rev" placeholder="Total You Earn (e.g. 50)">
+                <button class="btn-main" onclick="publishAITask()">PUBLISH TASK</button>
             </div>
-            
+            <div class="glass-card">
+                <h4>📢 SET BUSINESS AD</h4>
+                <input type="text" id="adm-ad-img" placeholder="Ad Image URL">
+                <input type="text" id="adm-ad-url" placeholder="Ad Link">
+                <button class="btn-main" onclick="saveBusinessAd()">UPDATE AD</button>
+            </div>
             <h4>Pending Withdrawals</h4>
             <div id="payout-list"></div>
         </div>
@@ -80,13 +80,19 @@
             
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <button class="btn-main" onclick="startAdTask()">WATCH AD (0.50)</button>
-                <button id="bonus-btn" class="btn-main btn-gold" onclick="claimDailyBonus()">DAILY BONUS (10/=)</button>
+                <button class="btn-main btn-gold" onclick="claimDailyBonus()">DAILY BONUS (10/=)</button>
+            </div>
+        </div>
+
+        <div class="glass-card" id="task-section">
+            <h4 style="color:var(--main)">🖼️ AI DATA TASKS (EARN 10%)</h4>
+            <div id="task-display-area">
+                <p style="font-size:0.8rem; opacity:0.5;">Looking for new tasks...</p>
             </div>
         </div>
 
         <div class="glass-card">
             <h4>👥 REFER & EARN</h4>
-            <p style="font-size:0.75rem; opacity:0.7;">Share this link and earn commissions from your friends!</p>
             <div class="ref-box" id="ref-link">Generating link...</div>
             <button class="btn-main" style="padding:5px; font-size:0.7rem;" onclick="copyRef()">COPY LINK</button>
         </div>
@@ -117,7 +123,6 @@
 </div>
 
 <script>
-// 🔥 Firebase Setup (Using your keys)
 const firebaseConfig = {
     apiKey: "AIzaSyAyShizj4G0g7z2CCHDLbetOWuJwaimcBM",
     authDomain: "cash-master-pro-b5b5a.firebaseapp.com",
@@ -152,7 +157,7 @@ async function setupUser(user) {
         loadAdminData();
     }
 
-    // Load Business Ad
+    // Load Settings
     db.collection("settings").doc("ads").onSnapshot(doc => {
         if(doc.exists) {
             const data = doc.data();
@@ -180,27 +185,52 @@ async function setupUser(user) {
             document.getElementById('lock-msg').style.color = "var(--green)";
         }
     });
+
+    loadActiveTasks();
 }
 
-// --- Features ---
+// --- Task System ---
 
-function claimDailyBonus() {
-    const userRef = db.collection("users").doc(currentUser.uid);
-    userRef.get().then(doc => {
-        const last = doc.data().lastBonus || 0;
-        const now = Date.now();
-        if(now - last > 86400000) { // 24 Hours
-            userRef.update({ 
-                balance: firebase.firestore.FieldValue.increment(10),
-                lastBonus: now
-            });
-            alert("Congratulations! You got Rs. 10 Daily Bonus.");
-        } else {
-            alert("Already claimed! Come back tomorrow.");
-        }
+function publishAITask() {
+    const img = document.getElementById('adm-task-img').value;
+    const opts = document.getElementById('adm-task-opts').value.split(',');
+    const rev = parseFloat(document.getElementById('adm-task-rev').value);
+    const userPay = rev * 0.10; // 🛑 10% Logic
+
+    db.collection("tasks").add({
+        img, options: opts, pay: userPay, status: "active", createdAt: Date.now()
+    }).then(() => {
+        alert("Task Published! User earns: Rs. " + userPay);
     });
 }
 
+function loadActiveTasks() {
+    db.collection("tasks").where("status", "==", "active").limit(3).onSnapshot(snap => {
+        const area = document.getElementById('task-display-area');
+        if(snap.empty) { area.innerHTML = "No tasks. Check back later!"; return; }
+        area.innerHTML = "";
+        snap.forEach(doc => {
+            const t = doc.data();
+            let buttons = t.options.map(o => `<button class="btn-main" style="width:auto; margin:5px; padding:8px;" onclick="completeAITask('${doc.id}', ${t.pay})">${o}</button>`).join('');
+            area.innerHTML += `
+                <div style="border-top: 1px solid #333; padding-top:10px; margin-top:10px;">
+                    <img src="${t.img}" class="task-img">
+                    <p style="font-size:0.8rem;">Pick the correct answer to earn <b>Rs. ${t.pay.toFixed(2)}</b></p>
+                    ${buttons}
+                </div>`;
+        });
+    });
+}
+
+function completeAITask(taskId, pay) {
+    db.collection("users").doc(currentUser.uid).update({
+        balance: firebase.firestore.FieldValue.increment(pay)
+    }).then(() => {
+        alert("Success! Rs." + pay.toFixed(2) + " added.");
+    });
+}
+
+// --- Existing Monetag/Bonus ---
 function startAdTask() {
     window.open(MONETAG_DIRECT, '_blank');
     document.getElementById('ad-modal').style.display = 'flex';
@@ -208,30 +238,26 @@ function startAdTask() {
     const itv = setInterval(() => {
         time--;
         document.getElementById('timer-box').innerText = time;
-        if(time <= 0) {
-            clearInterval(itv);
-            document.getElementById('claim-reward-btn').style.display = 'block';
-        }
+        if(time <= 0) { clearInterval(itv); document.getElementById('claim-reward-btn').style.display = 'block'; }
     }, 1000);
 }
 
 function finalizeReward() {
-    db.collection("users").doc(currentUser.uid).update({
-        balance: firebase.firestore.FieldValue.increment(0.50)
-    }).then(() => {
-        document.getElementById('ad-modal').style.display = 'none';
-        document.getElementById('claim-reward-btn').style.display = 'none';
-        document.getElementById('timer-box').innerText = "30";
+    db.collection("users").doc(currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(0.50) });
+    document.getElementById('ad-modal').style.display = 'none';
+    document.getElementById('claim-reward-btn').style.display = 'none';
+}
+
+function claimDailyBonus() {
+    const userRef = db.collection("users").doc(currentUser.uid);
+    userRef.get().then(doc => {
+        const last = doc.data().lastBonus || 0;
+        if(Date.now() - last > 86400000) {
+            userRef.update({ balance: firebase.firestore.FieldValue.increment(10), lastBonus: Date.now() });
+            alert("Daily Bonus Claimed!");
+        } else { alert("Come back tomorrow!"); }
     });
 }
-
-function copyRef() {
-    const link = document.getElementById('ref-link').innerText;
-    navigator.clipboard.writeText(link);
-    alert("Referral link copied!");
-}
-
-// --- Admin Section ---
 
 function saveBusinessAd() {
     const img = document.getElementById('adm-ad-img').value;
@@ -256,14 +282,18 @@ function loadAdminData() {
 function approvePay(docId, uid, amt) {
     db.collection("withdrawals").doc(docId).update({ status: "Paid" });
     db.collection("users").doc(uid).update({ balance: firebase.firestore.FieldValue.increment(-amt) });
-    alert("Payout Success!");
+    alert("Paid!");
 }
 
 function submitWithdraw() {
     const amt = parseFloat(document.getElementById('wd-amount').value);
-    db.collection("withdrawals").add({
-        uid: currentUser.uid, name: currentUser.displayName, amount: amt, status: "Pending", time: Date.now()
-    }).then(() => alert("Withdrawal Request Sent!"));
+    db.collection("withdrawals").add({ uid: currentUser.uid, name: currentUser.displayName, amount: amt, status: "Pending", time: Date.now() });
+    alert("Request Sent!");
+}
+
+function copyRef() {
+    navigator.clipboard.writeText(document.getElementById('ref-link').innerText);
+    alert("Copied!");
 }
 
 // Background Globe
